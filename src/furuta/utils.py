@@ -97,7 +97,7 @@ def load_data_device(device, utype, gtype, init_method, u_func=None, g_func=None
       
     '''
     # create trajectories
-    q1, p1, q2, p2, energy, derivatives, t_eval = multiple_trajectories_furuta(utype, gtype, init_method, time_steps, num_trajectories, u_func, g_func,
+    q1, p1, q2, p2, energy, derivatives, t_eval = multiple_trajectories_furuta(device, utype, gtype, init_method, time_steps, num_trajectories, u_func, g_func,
                           None, Ts , noise_std, C_q1, C_q2, g, Jr,  Lr,  Mp, Lp)
 
     q1 = q1.to(device)
@@ -110,7 +110,7 @@ def load_data_device(device, utype, gtype, init_method, u_func=None, g_func=None
     if u_func is not None:
         u = u_func(t_eval).to(device)
     else:
-        u = torch.zeros_like(t_eval)
+        u = torch.zeros_like(t_eval,device=device)
     stds = torch.tensor([q1.std(),p1.std(),q2.std(),p2.std()])
     # dataloader to load data in batches
     train_loader, test_loader = data_loader_furuta(u, q1, p1, q2, p2, energy, derivatives, t_eval, batch_size=batch_size,

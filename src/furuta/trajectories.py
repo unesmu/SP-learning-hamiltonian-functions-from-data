@@ -163,7 +163,7 @@ def energy_furuta(dq1dt, dq2dt, q1, g, Jr, Lr, Mp, Lp):
 
     return E
 
-def get_energy_furuta(time_steps, Ts, u_func, g_func, utype, gtype, q1, p1, q2, p2, C_q1, C_q2, g, Jr, Lr, Mp, Lp):
+def get_energy_furuta(device, time_steps, Ts, u_func, g_func, utype, gtype, q1, p1, q2, p2, C_q1, C_q2, g, Jr, Lr, Mp, Lp):
     '''
     Description:
 
@@ -174,7 +174,7 @@ def get_energy_furuta(time_steps, Ts, u_func, g_func, utype, gtype, q1, p1, q2, 
     '''
     energy=[]
     derivatives=[]
-    t = torch.linspace(1, time_steps, time_steps) * Ts
+    t = torch.linspace(1, time_steps, time_steps, device=device) * Ts
     #for t, coords in (t, torch.stack((q1, p1, q2, p2),dim=1)):
     coords = torch.stack((q1, p1, q2, p2),dim=1)
     for i in range(len(t)):
@@ -213,7 +213,7 @@ def get_energy_furuta_newtonian(q1, dq1dt, q2, dq2dt, C_q1, C_q2, g, Jr, Lr, Mp,
 
 ''' MULTIPLE TRAJECTORIES '''
 
-def multiple_trajectories_furuta(utype, gtype, init_method, time_steps, num_trajectories, u_func=None, g_func=None, 
+def multiple_trajectories_furuta(device, utype, gtype, init_method, time_steps, num_trajectories, u_func=None, g_func=None, 
                           y0=torch.tensor([1.0,0.0,1.0,0.0]), Ts = 0.005,
                           noise_std=0.0, C_q1=0.0, C_q2=0.0, g = 9.81, 
                           Jr = 5.72*1e-5, Lr = 0.085, Mp = 0.024, Lp = 0.129, energ_deriv=True):
@@ -232,7 +232,7 @@ def multiple_trajectories_furuta(utype, gtype, init_method, time_steps, num_traj
     energy = []
     derivatives = []
     if energ_deriv:
-      energy, derivatives = get_energy_furuta(time_steps, Ts, u_func, g_func, utype, gtype, q1, p1, q2, p2, C_q1, C_q2, g, Jr, Lr, Mp, Lp)
+      energy, derivatives = get_energy_furuta(device,time_steps, Ts, u_func, g_func, utype, gtype, q1, p1, q2, p2, C_q1, C_q2, g, Jr, Lr, Mp, Lp)
       derivatives = derivatives.unsqueeze(dim=0)
 
     for _ in range(num_trajectories-1):
@@ -241,7 +241,7 @@ def multiple_trajectories_furuta(utype, gtype, init_method, time_steps, num_traj
                                                                  y0, noise_std, 
                                                                 Ts, C_q1, C_q2, g, Jr, Lr, 
                                                                 Mp , Lp)
-        energy_n, derivatives_n = get_energy_furuta(time_steps, Ts, u_func, g_func, utype, gtype, q1_n, p1_n, q2_n, p2_n, C_q1, C_q2, g, Jr, Lr, Mp, Lp)
+        energy_n, derivatives_n = get_energy_furuta(device, time_steps, Ts, u_func, g_func, utype, gtype, q1_n, p1_n, q2_n, p2_n, C_q1, C_q2, g, Jr, Lr, Mp, Lp)
 
         q1 = torch.vstack((q1, q1_n))
         p1 = torch.vstack((p1, p1_n))
