@@ -13,3 +13,5 @@ pip install -U scikit-learn
 conda install -c conda-forge matplotlib
 pip install autograd
 conda install -c conda-forge imageio
+
+conda install pandas

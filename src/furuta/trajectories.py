@@ -57,14 +57,14 @@ def get_init_state(init_method):
 
 ''' Input functions '''
 
-def chirp_fun(t,T=1.5,f0=1,f1=10):
+def chirp_fun(t,T=1.5,f0=1,f1=50):
     # https://en.wikipedia.org/wiki/Chirp
     c = (f1-f0)/T
     scale = 1
     return torch.sin(2*torch.pi*(c*t**2/2 + f0*t))*scale
 
 def multi_sine(t):
-  scale = 1.0
+  scale = 0.5
   f = torch.tensor([2,10,3,4]).unsqueeze(dim=1)
   A = torch.tensor([2,0.5,0.3,0.8]).unsqueeze(dim=1)
   return (A*torch.sin(2*torch.pi*t*f)).sum(dim=0)*scale
