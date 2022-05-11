@@ -22,7 +22,7 @@ class TrajectoryDataset_furuta(Dataset):
     Outpus:
       
     '''
-    def __init__(self, q1, p1, q2, p2, t_eval, #energy=torch.tensor(False), 
+    def __init__(self, u, q1, p1, q2, p2, t_eval, #energy=torch.tensor(False), 
                  derivatives, coord_type='hamiltonian' ):
         self.t_eval = t_eval
         self.coord_type = coord_type
@@ -30,6 +30,7 @@ class TrajectoryDataset_furuta(Dataset):
         self.p1 = p1
         self.q2 = q2
         self.p2 = p2
+        self.u = u
         # if energy:
         #    self.energy = energy
         #if derivatives:
@@ -62,12 +63,13 @@ class TrajectoryDataset_furuta(Dataset):
             x = torch.vstack((q1,dq1dt,q2,dq2dt))
             
         t_eval = self.t_eval
+        u = self.u
+        
+        return u, x, t_eval
 
-        return x, t_eval
 
 
-
-def data_loader_furuta(q1, p1, q2, p2, energy, derivatives, t_eval, batch_size,
+def data_loader_furuta(u, q1, p1, q2, p2, energy, derivatives, t_eval, batch_size,
                        shuffle = True, proportion = 0.5, coord_type='newtonian'):
     '''
     Description:
@@ -78,7 +80,7 @@ def data_loader_furuta(q1, p1, q2, p2, energy, derivatives, t_eval, batch_size,
       
     '''
     # split  into train and test 
-    full_dataset = TrajectoryDataset_furuta(q1, p1, q2, p2, t_eval,derivatives, coord_type=coord_type)
+    full_dataset = TrajectoryDataset_furuta(u, q1, p1, q2, p2, t_eval,derivatives, coord_type=coord_type)
     if proportion:
 
         train_size = int(proportion * len(full_dataset))

@@ -13,7 +13,7 @@ import time as time
 
 
 
-def furuta_H(q1,p1,q2,p2):
+def furuta_H(q1, p1, q2, p2, g, Jr, Lr, Mp, Lp):
     '''
     Description:
       Hamiltonian function for the Furuta pendulum 
@@ -26,11 +26,6 @@ def furuta_H(q1,p1,q2,p2):
     ''' 
 
     # system constants
-    g = 9.81
-    Jr = 5.72*1e-5
-    Lr = 0.085
-    Mp = 0.024
-    Lp = 0.129
     Jp = (1/12)*Mp*Lp**2
 
     # function constants
@@ -47,7 +42,7 @@ def furuta_H(q1,p1,q2,p2):
 
     return H
     
-def hamiltonian_fn_furuta(coords):
+def hamiltonian_fn_furuta(coords, g, Jr, Lr, Mp, Lp):
     '''
     Description:
       Hamiltonian function for the Furuta pendulum, wraps furuta_H so that it is 
@@ -64,18 +59,18 @@ def hamiltonian_fn_furuta(coords):
     '''
     q1,p1,q2,p2 = torch.split(coords,1)
 
-    H = furuta_H(q1,p1,q2,p2)
+    H = furuta_H(q1, p1, q2, p2, g, Jr, Lr, Mp, Lp)
     return H
 
-def coord_derivatives_furuta(coords, u=0, C_q1=0.0, C_q2=0.0):
+def coord_derivatives_furuta(t, coords, C_q1, C_q2, g, Jr, Lr, Mp, Lp, u_func, g_func, utype, gtype):
     '''
     Description:
         Returns the derivatives of the generalized coordinates
 
     Inputs : 
       - coords (tensor) : vector containing generalized coordinates q1,p1,q2,p2
-      - C_q1 (default=0.0, float) : coefficient of friction related to p1 ( and q1)
-      - C_q2 (default=0.0, float) : coefficient of friction related to p2 ( and q2)
+      - C_q1 (float) : coefficient of friction related to p1 ( and q1)
+      - C_q2 (float) : coefficient of friction related to p2 ( and q2)
 
     Outputs :
       - dq1dt, dp1dt, dq2dt, dp2dt (tensors) : Derivatives w.r.t coords
@@ -84,21 +79,29 @@ def coord_derivatives_furuta(coords, u=0, C_q1=0.0, C_q2=0.0):
         coords.requires_grad=True
 
     # Hamiltonian function
-    H = hamiltonian_fn_furuta(coords)
+    H = hamiltonian_fn_furuta(coords, g, Jr, Lr, Mp, Lp)
 
     # gradient of the hamiltornian function wrt the generalized coordinates
     dcoords = torch.autograd.grad(H, coords, create_graph=True) # !! might need to add H.sum() if batches used here later
 
     dHdq1, dHdp1, dHdq2, dHdp2 = torch.split(dcoords[0], 1)
 
-    dq1dt = dHdp1
-    dp1dt = -dHdq1 -C_q1*dHdp1
-    dq2dt = dHdp2
-    dp2dt = -dHdq2 -C_q2*dHdp2
+    
+    if (u_func is not None) & (g_func is not None) :
+      u = u_func(t, utype)
+      G = g_func(coords, gtype)
+    else:
+      u = 0
+      G = torch.tensor([0.0,0.0,0.0,0.0])
+
+    dq1dt =   dHdp1 + u * G[0]
+    dp1dt = - dHdq1 - C_q1*dHdp1 + u * G[2]
+    dq2dt =   dHdp2 + u * G[1]
+    dp2dt = - dHdq2 - C_q2*dHdp2 + u * G[3]
 
     return dq1dt, dp1dt, dq2dt, dp2dt
     
-def dynamics_fn_furuta(t, coords, u=0, C_q1=0.0, C_q2=0.0):
+def dynamics_fn_furuta(t, coords, C_q1, C_q2, g, Jr, Lr, Mp, Lp, u_func, g_func, utype, gtype):
     '''
     Description:
     Function that returns the gradient (in form of a function) of a Hamiltonian function
@@ -108,15 +111,14 @@ def dynamics_fn_furuta(t, coords, u=0, C_q1=0.0, C_q2=0.0):
       - u () : system input
       - C () : dissipation coefficient
 
-    Outputs :
+    Outputs :£
       - S () : Symplectic gradient
 
     Credits : 
       - This function has a similar structure as the one in the SymODEN repository
     '''
 
-    dq1dt, dp1dt, dq2dt, dp2dt = coord_derivatives_furuta(coords, u, C_q1,
-                                                          C_q2)
+    dq1dt, dp1dt, dq2dt, dp2dt = coord_derivatives_furuta(t, coords, C_q1, C_q2, g, Jr, Lr, Mp, Lp, u_func, g_func, utype, gtype)
 
     S = torch.hstack((dq1dt, dp1dt, dq2dt, dp2dt))
     return S

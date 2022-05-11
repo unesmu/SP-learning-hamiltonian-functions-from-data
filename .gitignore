@@ -2,3 +2,4 @@
 *.pyc
 **/.vscode
 *.code-workspace
+notebooks/NOT_CLEAN/w10_furuta_pendulum.ipynb
