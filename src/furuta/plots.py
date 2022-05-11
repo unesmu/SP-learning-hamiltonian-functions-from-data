@@ -75,7 +75,7 @@ def plot_traj_furuta(t_eval, q1, p1, q2, p2, energy=torch.tensor(False),
     plt.show()
     return
 
-def plot_furuta_hat_nom(model, u_func, g_func, data_loader_t,n,t_max, C_q1, C_q2, g, Jr, Lr, Mp, Lp,
+def plot_furuta_hat_nom(model, u_func, g_func, utype, gtype, data_loader_t,n,t_max, C_q1, C_q2, g, Jr, Lr, Mp, Lp,
                         title = 'Trajectory of the generalized coordinates'#, coord_type='hamiltonian'
                      , file_path=None):
     '''
@@ -89,13 +89,13 @@ def plot_furuta_hat_nom(model, u_func, g_func, data_loader_t,n,t_max, C_q1, C_q2
     Outputs:
       None
     '''
-    x_nom, t_eval = next(iter(data_loader_t))
+    u, x_nom, t_eval = next(iter(data_loader_t))
 
     t_eval = t_eval[0,:] # otherwise it is by batch
     time_steps = len(t_eval)
     Ts = t_eval[0]
     # predicted trajectory
-    x_hat = odeint(model, x_nom[:, :, 0], t_eval[0,:], method='rk4').detach()
+    x_hat = odeint(model, x_nom[:, :, 0], t_eval, method='rk4').detach()
     x_hat = x_hat.detach()
 
     q1_hat = x_hat[:,n,0] # to do: make this concise with torch split or chunck
@@ -103,7 +103,7 @@ def plot_furuta_hat_nom(model, u_func, g_func, data_loader_t,n,t_max, C_q1, C_q2
     q2_hat = x_hat[:,n,2]
     p2_hat = x_hat[:,n,3]
 
-    E_hat, _ = get_energy_furuta(time_steps, Ts, u_func, g_func, q1_hat, p1_hat, q2_hat, p2_hat, C_q1, C_q2, g, Jr, Lr, Mp, Lp)
+    E_hat, _ = get_energy_furuta(time_steps, Ts, u_func, g_func, utype, gtype, q1_hat, p1_hat, q2_hat, p2_hat, C_q1, C_q2, g, Jr, Lr, Mp, Lp)
     H_hat = furuta_H(q1_hat, p1_hat, q2_hat, p2_hat, g, Jr, Lr, Mp, Lp)
     # H_hat = model.H_net(x_hat[:,0,:]).detach().squeeze()
 
@@ -113,7 +113,7 @@ def plot_furuta_hat_nom(model, u_func, g_func, data_loader_t,n,t_max, C_q1, C_q2
     q2_nom = x_nom[n,2,:]
     p2_nom = x_nom[n,3,:]
 
-    E_nom, _ = get_energy_furuta(time_steps, Ts, u_func, g_func, q1_nom, p1_nom, q2_nom, p2_nom, C_q1, C_q2, g, Jr, Lr, Mp, Lp)
+    E_nom, _ = get_energy_furuta(time_steps, Ts, u_func, g_func, utype, gtype, q1_nom, p1_nom, q2_nom, p2_nom, C_q1, C_q2, g, Jr, Lr, Mp, Lp)
     H_nom = furuta_H(q1_nom, p1_nom, q2_nom, p2_nom, g, Jr, Lr, Mp, Lp)
 
     
@@ -221,7 +221,7 @@ def plot_furuta_hat_nom(model, u_func, g_func, data_loader_t,n,t_max, C_q1, C_q2
     plt.show()
     return
 
-def plot_longer_horizon_furuta(model, u_func, g_func, test_loader, t1, t2, C_q1, C_q2, g, Jr, Lr, Mp, Lp, 
+def plot_longer_horizon_furuta(model, u_func, g_func, utype, gtype, test_loader, t1, t2, C_q1, C_q2, g, Jr, Lr, Mp, Lp, 
                                title = 'Trajectory after longer horizon', file_path=None,):
     '''
 
@@ -232,7 +232,7 @@ def plot_longer_horizon_furuta(model, u_func, g_func, test_loader, t1, t2, C_q1,
     Outpus:
       
     '''
-    x_nom, t_eval = next(iter(test_loader))
+    u, x_nom, t_eval = next(iter(test_loader))
 
     t_eval = t_eval[0,t1:t2]
 
@@ -240,7 +240,7 @@ def plot_longer_horizon_furuta(model, u_func, g_func, test_loader, t1, t2, C_q1,
     Ts = t_eval[0]
 
     # test trajectories
-    x_hat = odeint(model, x_nom[:, :, 0], t_eval[0,:], method='rk4').detach()
+    x_hat = odeint(model, x_nom[:, :, 0], t_eval, method='rk4').detach()
     x_hat = x_hat.detach()
 
     q1_hat = x_hat[t1:t2,0,0] # to do: make this concise with torch split or chunck
@@ -248,7 +248,7 @@ def plot_longer_horizon_furuta(model, u_func, g_func, test_loader, t1, t2, C_q1,
     q2_hat = x_hat[t1:t2,0,2]
     p2_hat = x_hat[t1:t2,0,3]
 
-    E_hat, _ = get_energy_furuta(time_steps, Ts, u_func, g_func, q1_hat, p1_hat, q2_hat, p2_hat, C_q1, C_q2, g, Jr, Lr, Mp, Lp) 
+    E_hat, _ = get_energy_furuta(time_steps, Ts, u_func, g_func, utype, gtype, q1_hat, p1_hat, q2_hat, p2_hat, C_q1, C_q2, g, Jr, Lr, Mp, Lp) 
     H_hat = furuta_H(q1_hat, p1_hat, q2_hat, p2_hat, g, Jr, Lr, Mp, Lp)
     # H_hat = model.H_net(x_hat[t1:t2,0,:]).detach().squeeze()
 
@@ -258,7 +258,7 @@ def plot_longer_horizon_furuta(model, u_func, g_func, test_loader, t1, t2, C_q1,
     q2_nom = x_nom[0,2,t1:t2]
     p2_nom = x_nom[0,3,t1:t2]
 
-    E_nom, _ = get_energy_furuta(time_steps, Ts, u_func, g_func, q1_nom, p1_nom, q2_nom, p2_nom, C_q1, C_q2, g, Jr, Lr, Mp, Lp)
+    E_nom, _ = get_energy_furuta(time_steps, Ts, u_func, g_func, utype, gtype, q1_nom, p1_nom, q2_nom, p2_nom, C_q1, C_q2, g, Jr, Lr, Mp, Lp)
     H_nom = furuta_H(q1_nom, p1_nom, q2_nom, p2_nom, g, Jr, Lr, Mp, Lp)
 
 

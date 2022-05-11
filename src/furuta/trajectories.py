@@ -69,7 +69,7 @@ def multi_sine(t):
   A = torch.tensor([2,0.5,0.3,0.8]).unsqueeze(dim=1)
   return (A*torch.sin(2*torch.pi*t*f)).sum(dim=0)*scale
 
-def step_fun(t, t1=0.5, value=0.1):
+def step_fun(t, t1=0.05, value=0.1):
   f = torch.zeros_like(t)
   f[t < t1] = 0
   f[~(t < t1)] = value
