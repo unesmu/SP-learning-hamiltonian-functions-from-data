@@ -75,7 +75,7 @@ def step_fun(t, t1=0.05, value=0.1):
   f[~(t < t1)] = value
   return f
 
-def u_func(t, utype='tanh'):  
+def u_func(t, utype):  
   ''' time dependent input '''
   if utype == 'tanh':
       u = (-torch.tanh((t-0.75)*4)+1)/100
@@ -88,7 +88,7 @@ def u_func(t, utype='tanh'):
   u.requires_grad=False
   return u
 
-def g_func(coords, gtype='simple'):
+def g_func(coords, gtype):
   ''' state dependent input '''
   # q1,p1,q2,p2 = torch.split(coords,1)
   if gtype=='simple':

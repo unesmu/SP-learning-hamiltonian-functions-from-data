@@ -107,7 +107,10 @@ def load_data_device(device, utype, gtype, init_method, u_func=None, g_func=None
     energy = energy.to(device)
     derivatives = derivatives.to(device)
     t_eval = t_eval.to(device)
-    u = u_func(t_eval).to(device)
+    if u_func is not None:
+        u = u_func(t_eval).to(device)
+    else:
+        u = torch.zeros_like(t_eval)
     stds = torch.tensor([q1.std(),p1.std(),q2.std(),p2.std()])
     # dataloader to load data in batches
     train_loader, test_loader = data_loader_furuta(u, q1, p1, q2, p2, energy, derivatives, t_eval, batch_size=batch_size,

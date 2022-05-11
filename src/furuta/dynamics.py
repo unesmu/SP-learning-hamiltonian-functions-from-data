@@ -87,7 +87,7 @@ def coord_derivatives_furuta(t, coords, C_q1, C_q2, g, Jr, Lr, Mp, Lp, u_func, g
     dHdq1, dHdp1, dHdq2, dHdp2 = torch.split(dcoords[0], 1)
 
     
-    if (u_func is not None) & (g_func is not None) :
+    if (u_func is not None) and (g_func is not None) :
       u = u_func(t, utype)
       G = g_func(coords, gtype)
     else:
