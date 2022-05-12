@@ -63,10 +63,10 @@ def chirp_fun(t,T=1.5,f0=1,f1=50):
     scale = 1
     return torch.sin(2*torch.pi*(c*t**2/2 + f0*t))*scale
 
-def multi_sine(t):
-  scale = 0.5
-  f = torch.tensor([2,10,3,4]).unsqueeze(dim=1)
-  A = torch.tensor([2,0.5,0.3,0.8]).unsqueeze(dim=1)
+def multi_sine(t, scale = 0.5):
+  
+  f = torch.tensor([2,10,3,4], device = t.device).unsqueeze(dim=1)
+  A = torch.tensor([2,0.5,0.3,0.8], device = t.device).unsqueeze(dim=1)
   return (A*torch.sin(2*torch.pi*t*f)).sum(dim=0)*scale
 
 def step_fun(t, t1=0.05, value=0.1):
@@ -98,7 +98,7 @@ def g_func(coords, gtype):
 
 '''Functions to generate the trajectories'''
 
-def get_trajectory_furuta(utype, gtype, init_method, u_func=None, g_func=None, time_steps=20, y0=None, noise_std=0.0, Ts = 0.005, C_q1=0.0, 
+def get_trajectory_furuta(device, utype, gtype, init_method, u_func=None, g_func=None, time_steps=20, y0=None, noise_std=0.0, Ts = 0.005, C_q1=0.0, 
                           C_q2=0.0, g = 9.81, Jr = 5.72*1e-5, Lr = 0.085, Mp = 0.024, Lp = 0.129):   
     '''
     Description:
@@ -110,7 +110,7 @@ def get_trajectory_furuta(utype, gtype, init_method, u_func=None, g_func=None, t
     '''
 
      # sampling time 
-    t_eval = torch.linspace(1, time_steps, time_steps) * Ts # evaluated times vector
+    t_eval = torch.linspace(1, time_steps, time_steps, device=device) * Ts # evaluated times vector
     t_span = [Ts, time_steps*Ts] # [t_start, t_end]
 
     # get initial state
@@ -226,7 +226,7 @@ def multiple_trajectories_furuta(device, utype, gtype, init_method, time_steps, 
       
     '''
     # the first trajectory
-    q1, p1, q2, p2, t_eval = get_trajectory_furuta(utype, gtype, init_method, u_func, g_func, time_steps, y0, noise_std, 
+    q1, p1, q2, p2, t_eval = get_trajectory_furuta(device, utype, gtype, init_method, u_func, g_func, time_steps, y0, noise_std, 
                                                    Ts, C_q1, C_q2, g, Jr, Lr, 
                                                    Mp , Lp)
     energy = []
