@@ -97,7 +97,7 @@ def load_data_device(device, utype, gtype, init_method, u_func=None, g_func=None
       
     '''
     # create trajectories
-    q1, p1, q2, p2, energy, derivatives, t_eval = multiple_trajectories_furuta(device, utype, gtype, init_method, time_steps, num_trajectories, u_func, g_func,
+    q1, p1, q2, p2, energy, derivatives, t_eval = multiple_trajectories_furuta('cpu', utype, gtype, init_method, time_steps, num_trajectories, u_func, g_func,
                           None, Ts , noise_std, C_q1, C_q2, g, Jr,  Lr,  Mp, Lp)
 
     q1 = q1.to(device)
