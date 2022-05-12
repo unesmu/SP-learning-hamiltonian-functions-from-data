@@ -76,7 +76,7 @@ def load_model(device, hidden_dim=90, nb_hidden_layers=4):
     
 def load_model_nes_hdnn(device, utype, u_func=None, hidden_dim=90, nb_hidden_layers=4):
 
-    G_net = MLP(input_dim=4, hidden_dim=64, nb_hidden_layers=1, output_dim=4, activation='tanh')
+    G_net = MLP(input_dim=4, hidden_dim=64, nb_hidden_layers=1, output_dim=2, activation='tanh')
     H_net = MLP(input_dim=4, hidden_dim=90, nb_hidden_layers=4, output_dim=1, activation='x+sin(x)^2')
     model = Nes_HDNN(utype=utype, u_func=u_func, G_net=G_net, H_net=H_net, device=device)
 

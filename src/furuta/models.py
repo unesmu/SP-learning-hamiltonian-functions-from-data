@@ -144,10 +144,10 @@ class Nes_HDNN(torch.nn.Module):
                 u = self.u_func(t,self.utype)
             else:
                 u = torch.tensor([0.0])
-            dq1dt = dHdp1 + (G[:,0].T*u).unsqueeze(dim=1)
-            dp1dt = -dHdq1 + (G[:,2].T*u).unsqueeze(dim=1) # - self.C1_dissip.pow(2)*dHdp1 
-            dq2dt = dHdp2 + (G[:,1].T*u).unsqueeze(dim=1)
-            dp2dt = -dHdq2 + (G[:,3].T*u).unsqueeze(dim=1) # - self.C2_dissip.pow(2)*dHdp2 
+            dq1dt = dHdp1 
+            dp1dt = -dHdq1 + (G[:,1].T*u).unsqueeze(dim=1) # - self.C1_dissip.pow(2)*dHdp1 
+            dq2dt = dHdp2 
+            dp2dt = -dHdq2 + (G[:,2].T*u).unsqueeze(dim=1) # - self.C2_dissip.pow(2)*dHdp2 
 
             # symplectic gradient 
             S_h = torch.cat((dq1dt, dp1dt, dq2dt, dp2dt), 

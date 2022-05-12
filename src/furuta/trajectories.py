@@ -90,9 +90,9 @@ def u_func(t, utype):
 
 def g_func(coords, gtype):
   ''' state dependent input '''
-  # q1,p1,q2,p2 = torch.split(coords,1)
+  q1,p1,q2,p2 = torch.split(coords,1)
   if gtype=='simple':
-      g = torch.tensor([0,0,1,1]) 
+      g = torch.tensor([1,1],device = q1.device) 
   g.requires_grad=False
   return g
 
