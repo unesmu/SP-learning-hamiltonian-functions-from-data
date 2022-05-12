@@ -109,13 +109,15 @@ def get_trajectory_furuta(device, utype, gtype, init_method, u_func=None, g_func
       
     '''
 
-     # sampling time 
+     # sampling time
+
     t_eval = torch.linspace(1, time_steps, time_steps, device=device) * Ts # evaluated times vector
     t_span = [Ts, time_steps*Ts] # [t_start, t_end]
 
     # get initial state
     if y0 is None:
         y0 = get_init_state(init_method)
+        y0 = y0.to(device) 
 
     # solve the differential equation using odeint
     q_p = odeint(func=lambda t, coords: dynamics_fn_furuta(t, coords, C_q1, C_q2, g, Jr, Lr, Mp, Lp, u_func, g_func, utype, gtype), 
@@ -124,10 +126,10 @@ def get_trajectory_furuta(device, utype, gtype, init_method, u_func=None, g_func
     q1, p1, q2, p2 = torch.chunk(q_p, 4, 1) 
 
     # add noise 
-    q1 = (q1+torch.randn(q1.shape)*noise_std).detach().squeeze()
-    p1 = (p1+torch.randn(p1.shape)*noise_std*torch.max(p1)).detach().squeeze()
-    q2 = (q2+torch.randn(q2.shape)*noise_std).detach().squeeze()
-    p2 = (p2+torch.randn(p2.shape)*noise_std*torch.max(p2)).detach().squeeze()
+    q1 = (q1+torch.randn(q1.shape, device=device)*noise_std).detach().squeeze()
+    p1 = (p1+torch.randn(p1.shape, device=device)*noise_std*torch.max(p1)).detach().squeeze()
+    q2 = (q2+torch.randn(q2.shape, device=device)*noise_std).detach().squeeze()
+    p2 = (p2+torch.randn(p2.shape, device=device)*noise_std*torch.max(p2)).detach().squeeze()
 
     # .detach() because the pytorch computational graph is no longer needed
     # only the value is needed
@@ -237,7 +239,7 @@ def multiple_trajectories_furuta(device, utype, gtype, init_method, time_steps, 
 
     for _ in range(num_trajectories-1):
         # the trajectories 2 to num_trajectories
-        q1_n, p1_n, q2_n, p2_n, t_eval_n = get_trajectory_furuta(utype, gtype, init_method, u_func, g_func, time_steps, 
+        q1_n, p1_n, q2_n, p2_n, t_eval_n = get_trajectory_furuta(device,utype, gtype, init_method, u_func, g_func, time_steps, 
                                                                  y0, noise_std, 
                                                                 Ts, C_q1, C_q2, g, Jr, Lr, 
                                                                 Mp , Lp)

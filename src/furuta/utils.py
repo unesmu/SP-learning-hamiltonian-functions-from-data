@@ -108,7 +108,7 @@ def load_data_device(device, utype, gtype, init_method, u_func=None, g_func=None
     derivatives = derivatives.to(device)
     t_eval = t_eval.to(device)
     if u_func is not None:
-        u = u_func(t_eval).to(device)
+        u = u_func(t_eval, utype).to(device)
     else:
         u = torch.zeros_like(t_eval,device=device)
     stds = torch.tensor([q1.std(),p1.std(),q2.std(),p2.std()])

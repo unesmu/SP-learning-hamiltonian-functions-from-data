@@ -86,13 +86,15 @@ def coord_derivatives_furuta(t, coords, C_q1, C_q2, g, Jr, Lr, Mp, Lp, u_func, g
 
     dHdq1, dHdp1, dHdq2, dHdp2 = torch.split(dcoords[0], 1)
 
-    
+    device = dHdq1.device
     if (u_func is not None) and (g_func is not None) :
       u = u_func(t, utype)
       G = g_func(coords, gtype)
     else:
-      u = 0
-      G = torch.tensor([0.0,0.0,0.0,0.0])
+      u = torch.tensor([0], device = device)
+      G = torch.tensor([0.0,0.0,0.0,0.0], device = device)
+
+
 
     dq1dt =   dHdp1 + u * G[0]
     dp1dt = - dHdq1 - C_q1*dHdp1 + u * G[2]
