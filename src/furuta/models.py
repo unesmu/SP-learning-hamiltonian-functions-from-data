@@ -48,7 +48,7 @@ class MLP(torch.nn.Module):
         self.fc2 = torch.nn.Linear(hidden_dim, output_dim)
         self.activation = choose_nonlinearity(activation) # activation function
 
-    def forward(self, x, separate_fields=False):
+    def forward(self, x):
         h = self.activation( self.fc1(x) )
         h = self.hidden_layers(h) 
         return self.fc2(h)
