@@ -16,6 +16,8 @@ from .models import *
 from .dynamics import *
 from .data import *
 from .trajectories import *
+
+
 def set_device():
     # set device to GPU if available otherwise use CPU
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
