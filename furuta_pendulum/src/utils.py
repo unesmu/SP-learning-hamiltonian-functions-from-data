@@ -1,6 +1,6 @@
 import torch
 
-from torchdiffeq import odeint_adjoint as odeint_adjoint 
+from torchdiffeq import odeint_adjoint as odeint_adjoint
 # func must be a nn.Module when using the adjoint method
 from torchdiffeq import odeint as odeint
 
@@ -15,7 +15,7 @@ from .trajectories import *
 def collect_gradients(named_parameters):
     '''Plots the gradients flowing through different layers in the net during training.
     Can be used for checking for possible gradient vanishing / exploding problems.
-    
+
     Usage: Plug this function in Trainer class after loss.backwards() as 
     "plot_grad_flow(self.model.named_parameters())" to visualize the gradient flow'''
 
@@ -85,7 +85,7 @@ def count_parameters(model):
 def load_model(device, hidden_dim=90, nb_hidden_layers=4):
     H_net = MLP(input_dim=4, hidden_dim=hidden_dim,
                 nb_hidden_layers=nb_hidden_layers, output_dim=1, activation='x+sin(x)^2')
-    model = U_HNN(input_dim=4, H_net=H_net, device=None)
+    model = simple_HNN(input_dim=4, H_net=H_net, device=None)
     model.to(device)
     return model
 
@@ -95,7 +95,7 @@ def load_model_nes_hdnn(device, utype, u_func=None, hidden_dim=90, nb_hidden_lay
                 output_dim=2, activation='tanh')
     H_net = MLP(input_dim=4, hidden_dim=90, nb_hidden_layers=4,
                 output_dim=1, activation='x+sin(x)^2')
-    model = Nes_HDNN(utype=utype, u_func=u_func,
+    model = Input_HNN(utype=utype, u_func=u_func,
                      G_net=G_net, H_net=H_net, device=device)
     model.to(device)
     return model
@@ -138,23 +138,16 @@ def load_data_device(device, init_method, w_rescale, u_func=None, g_func=None, t
     energy = energy.to(device)
     derivatives = derivatives.to(device)
     t_eval = t_eval.to(device)
-    # u = u.to(device)
-    # G = G.to(device)
-    # if u_func is not None:
-    #     u = u_func(t_eval, utype).to(device)
-    # else:
-    #     u = torch.zeros_like(t_eval,device=device)
-    # stds = torch.tensor([q1.std(),p1.std(),q2.std(),p2.std()])
 
     # dataloader to load data in batches
     train_loader, test_loader = data_loader_furuta(q1, p1, q2, p2, energy, derivatives, t_eval, batch_size=batch_size,
                                                    shuffle=shuffle, proportion=proportion, coord_type=coord_type)  # u, G,
-    return train_loader, test_loader  # , stds
+    return train_loader, test_loader  
 
 
 def save_stats(stats, stats_path):
     with open(stats_path, 'w') as file:
-        file.write(json.dumps(stats))  # use `json.loads` to do the reverse
+        file.write(json.dumps(stats))  
     return
 
 
@@ -162,10 +155,10 @@ def read_dict(stats_path):
     # read the stats txt file
     with open(stats_path) as f:
         data = f.read()
-
     data = json.loads(data)
     return data
-    
+
+
 def get_maxmindenom(x, dim1, dim2, rescale_dims):
     maximums = x.amax(dim=dim1).unsqueeze(dim=dim2)
     minimums = x.amin(dim=dim1).unsqueeze(dim=dim2)
@@ -173,3 +166,41 @@ def get_maxmindenom(x, dim1, dim2, rescale_dims):
     denom[:, :, ~(torch.Tensor(rescale_dims).bool())] = 1  #
     print("min max values updated")
     return maximums, minimums, denom
+
+
+def name_from_params(Ts, rescale_loss, weights, epoch_number, num_params, utype,
+                     model_name, num_trajectories, furuta_type,
+                     noise_std, grad_clip, lr_schedule, C_q1, C_q2, horizon, min_max_rescale):
+
+    weights_title = ' | weights = ' + str(weights)
+    save_prefix = '{:d}e_p{:d}k_Ts{:1.3f}_'.format(
+        epoch_number, int((num_params-num_params % 1000)/1000), Ts)
+    if utype is None:
+        input = 'noinput'
+    else:
+        input = utype
+    save_prefix = model_name + '_' + input + '_' + \
+        str(num_trajectories)+'traj'+'_' + furuta_type + \
+        '_' + 'noise'+str(noise_std)+'_' + save_prefix
+    if grad_clip:
+        save_prefix = save_prefix + 'gradcl_'
+    if lr_schedule:
+        save_prefix = save_prefix + 'lrsched_'
+    if C_q1 == 0 and C_q2 == 0:
+        save_prefix = save_prefix + 'nodissip_'
+    else:
+        save_prefix = save_prefix + 'wdissip_'
+    if horizon:
+        save_prefix = save_prefix + 'constanthorizon_'
+    if rescale_loss:
+        save_prefix = save_prefix + 'rescaledloss_'
+    if min_max_rescale:
+        save_prefix = save_prefix + 'trajminmaxrescale_'
+
+    return save_prefix
+
+def is_same_size(horizon_list, switch_steps):
+    if len(horizon_list) == len(switch_steps):
+        print('horizon_list and switch_steps have the same size')
+    else:
+        raise ValueError('horizon_list and switch_steps do NOT have the same size')

@@ -4,10 +4,6 @@ from torchdiffeq import odeint_adjoint as odeint_adjoint
 # func must be a nn.Module when using the adjoint method
 from torchdiffeq import odeint as odeint
 
-import time as time
-
-
-
 def furuta_H(q1, p1, q2, p2, g, Jr, Lr, Mp, Lp):
     '''
     Description:

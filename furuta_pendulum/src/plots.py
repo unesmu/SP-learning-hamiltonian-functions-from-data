@@ -529,7 +529,7 @@ def training_plot(t_eval, train_x, nominal_x):
     plt.show()
     return
 
-def plot_grads(stats):
+def plot_grads(stats, file_path, save):
     '''
     '''
     grads_preclip_min = [ [] for _ in range(len(stats['layer_names'][0])) ]
@@ -575,4 +575,6 @@ def plot_grads(stats):
     fig.legend(loc=7)
     fig.tight_layout(rect=[0, 0.03, 1, 0.95])
     fig.subplots_adjust(right=0.70) 
-    plt.show()             
+    if save:
+        plt.savefig(file_path, format="png",dpi=400)
+    plt.show()

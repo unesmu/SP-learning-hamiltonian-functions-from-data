@@ -54,7 +54,8 @@ class MLP(torch.nn.Module):
         return self.fc2(h)
 
 """ RESNETS """
-class ResNet_config1(torch.nn.Module):
+
+class Expanding_ResNet(torch.nn.Module):
     '''
     Model compose of [ MLP - RESBLOCK1 - RESBLOCK2] used in the following way:
     First we train the model with only the MLP, then we introduce RESBLOCK1 when we increase the horizon, 
@@ -62,7 +63,7 @@ class ResNet_config1(torch.nn.Module):
     '''
 
     def __init__(self, resblock_list, num_blocks=4, input_dim=4, hidden_dim=90, nb_hidden_layers=1, output_dim=1, activation_res='x+sin(x)^2', activation_mlp='x+sin(x)^2'):
-        super(ResNet_config1, self).__init__()
+        super(Expanding_ResNet, self).__init__()
 
         self.resblocks = [MLP(input_dim=output_dim, hidden_dim=hidden_dim, nb_hidden_layers=nb_hidden_layers,
                               output_dim=output_dim, activation=activation_res) for _ in range(num_blocks)]
@@ -90,13 +91,13 @@ class ResNet_config1(torch.nn.Module):
                     param.copy_(param/1000)
 
 
-class ResNet_config2(torch.nn.Module):
+class Interp_ResNet(torch.nn.Module):
     '''
     MLP with number of hidden layers as a parameter
     '''
 
     def __init__(self, resblock_list, num_blocks=4, input_dim=4, hidden_dim=25, nb_hidden_layers=2, output_dim=1, activation_res='x+sin(x)^2', activation_mlp='x+sin(x)^2'):
-        super(ResNet_config2, self).__init__()
+        super(Interp_ResNet, self).__init__()
 
         self.resblocks = [MLP(input_dim=input_dim, hidden_dim=hidden_dim, nb_hidden_layers=nb_hidden_layers,
                               output_dim=input_dim, activation=activation_res) for _ in range(num_blocks)]
@@ -135,7 +136,7 @@ class ResNet_config2(torch.nn.Module):
             for param1, param2, param3 in zip(self.resblocks[i].parameters(), self.resblocks[j].parameters(), self.resblocks[k].parameters()):
                 param2.copy_((param1 + param3)/2)
 
-class ResNet_config3(torch.nn.Module):
+class Expanding_ResNet_wide(torch.nn.Module):
     '''
     Model compose of [RESBLOCK1 - RESBLOCK2 - MLP] used in the following way:
     First we train the model with only the MLP, then we introduce RESBLOCK1 when we increase the horizon, 
@@ -143,7 +144,7 @@ class ResNet_config3(torch.nn.Module):
     '''
 
     def __init__(self, resblock_list, num_blocks=4, input_dim=4, hidden_dim=90, nb_hidden_layers=1, output_dim=1, activation_res='x+sin(x)^2', activation_mlp='x+sin(x)^2'):
-        super(ResNet_config3, self).__init__()
+        super(Expanding_ResNet_wide, self).__init__()
 
         self.resblocks = [MLP(input_dim=input_dim, hidden_dim=hidden_dim, nb_hidden_layers=nb_hidden_layers,
                               output_dim=input_dim, activation=activation_res) for _ in range(num_blocks)]
@@ -172,7 +173,7 @@ class ResNet_config3(torch.nn.Module):
 
 """ NEURAL ODE MODELS """
 
-class U_HNN(torch.nn.Module):
+class simple_HNN(torch.nn.Module):
     '''
     Modified version of the original SymODEN_R module from symoden repository
     Similar to unconstrained ODE HNN from the report
@@ -180,7 +181,7 @@ class U_HNN(torch.nn.Module):
     '''
 
     def __init__(self, input_dim, H_net=None, device=None):
-        super(U_HNN, self).__init__()
+        super(simple_HNN, self).__init__()
         self.H_net = H_net
 
         self.device = device
@@ -272,14 +273,14 @@ class Autoencoder(torch.nn.Module):
         return z, x_hat
 
 
-class Nes_HDNN(torch.nn.Module):
+class Input_HNN(torch.nn.Module):
     '''
     Modified version of the original SymODEN_R module from symoden repository
     Similar to unconstrained ODE HNN from the report
     '''
 
     def __init__(self, u_func=None, G_net=None, H_net=None, device=None, dissip=False):
-        super(Nes_HDNN, self).__init__()
+        super(Input_HNN, self).__init__()
         self.H_net = H_net
         self.G_net = G_net
         self.u_func = u_func

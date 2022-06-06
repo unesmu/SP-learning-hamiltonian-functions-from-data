@@ -1,9 +1,10 @@
 from torch.utils.data import Dataset, DataLoader, random_split
 import torch
 
-from torchdiffeq import odeint_adjoint as odeint_adjoint 
+from torchdiffeq import odeint_adjoint as odeint_adjoint
 # func must be a nn.Module when using the adjoint method
 from torchdiffeq import odeint as odeint
+
 
 class TrajectoryDataset_furuta(Dataset):
     '''
@@ -15,16 +16,15 @@ class TrajectoryDataset_furuta(Dataset):
 
     '''
 
-    def __init__(self, q1, p1, q2, p2, t_eval,  # energy=torch.tensor(False),
-                 derivatives, coord_type='hamiltonian'):  # u, G,
+    def __init__(self, q1, p1, q2, p2, t_eval,
+                 derivatives, coord_type='hamiltonian'):
         self.t_eval = t_eval
         self.coord_type = coord_type
         self.q1 = q1  # [num_trajectories, time_steps]
         self.p1 = p1  # [num_trajectories, time_steps]
         self.q2 = q2  # [num_trajectories, time_steps]
         self.p2 = p2  # [num_trajectories, time_steps]
-        # self.u = u # [num_trajectories, time_steps]
-        # self.G = G # [num_trajectories, time_steps, (g1,g2,g3,g4)]
+
         if len(derivatives.shape) == 3:
             # [num_trajectories, time_steps, (dq1/dt,dp1/dt,dq2/dt,dp2/dt)]
             self.dq1dt = derivatives[:, :, 0]
@@ -45,10 +45,8 @@ class TrajectoryDataset_furuta(Dataset):
             p1 = self.p1[idx]
             q2 = self.q2[idx]
             p2 = self.p2[idx]
-            # u = self.u[idx]
-            # G = self.G[idx]
-            x = torch.stack((q1, p1, q2, p2), dim=1)  # ,u
-            # x = torch.hstack((x,G))
+
+            x = torch.stack((q1, p1, q2, p2), dim=1)
 
         if self.coord_type == 'newtonian':
 
@@ -65,7 +63,7 @@ class TrajectoryDataset_furuta(Dataset):
 
 
 def data_loader_furuta(q1, p1, q2, p2, energy, derivatives, t_eval, batch_size,
-                       shuffle=True, proportion=0.5, coord_type='hamiltonian'):  # u, G,
+                       shuffle=True, proportion=0.5, coord_type='hamiltonian'):
     '''
     Description:
 
@@ -76,7 +74,7 @@ def data_loader_furuta(q1, p1, q2, p2, energy, derivatives, t_eval, batch_size,
     '''
     # split  into train and test
     full_dataset = TrajectoryDataset_furuta(
-        q1, p1, q2, p2, t_eval, derivatives, coord_type=coord_type)  # u, G,
+        q1, p1, q2, p2, t_eval, derivatives, coord_type=coord_type)
     if proportion:
 
         train_size = int(proportion * len(full_dataset))
@@ -91,11 +89,8 @@ def data_loader_furuta(q1, p1, q2, p2, energy, derivatives, t_eval, batch_size,
             shuffle
         )
     else:
-      # if proportion is set to None don't split the dataset
+        # if proportion is set to None don't split the dataset
         train_dataset = full_dataset
-        energy_train = energy
-        derivatives_train = derivatives
-        t_eval_train = t_eval
         test_loader = None
 
     # create the dataloader object from the custom dataset

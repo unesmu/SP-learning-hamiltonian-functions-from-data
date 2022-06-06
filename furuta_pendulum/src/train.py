@@ -151,19 +151,24 @@ def multilevel_strategy_update(device, step, model, resnet_config, switch_steps)
     return model
 
 def generate_multi_level_list_conf2(length=17, num_lists=4):
-    
+    """
+    This function generates lists of decreasing size containing which resnets should be active
+    for the multilevel strategy
+
+    Example output for default parameters:
+    >>>
+    >>>
+    >>>
+    """
     largest_list =list(range(length))
     all_lists = [largest_list]
-    # print(largest_list)
     prev_list = largest_list
     for j in range(num_lists):
         new_list = []
         for i, elem in enumerate(prev_list):
-            # print(i)
             if not i%2 and i<len(prev_list):
                 new_list.append(elem)
             if i == len(prev_list)-1:
-                # print(new_list)
                 all_lists.append(new_list)
                 prev_list = new_list
     return all_lists
@@ -196,6 +201,7 @@ def train(device, model, Ts, train_loader, test_loader, w, grad_clip, lr_schedul
     logs = {'train_loss': [], 'test_loss': [], 'grads_preclip': [], 'grads_postclip': [], 'layer_names': []}
 
     denom = torch.tensor([1],device=device)
+    denom_test = torch.tensor([1],device=device)
     horizon_updated = 1
 
     for step in range(epochs):
@@ -204,14 +210,7 @@ def train(device, model, Ts, train_loader, test_loader, w, grad_clip, lr_schedul
         test_loss = 0
         t1 = time.time()
 
-        if horizon_type == 'schedule':
-            pass
-        #     horizon, num_steps= select_horizon_wschedule(step,optim,
-        #                                                   epoch_number,
-        #                                                   switch_steps)
-        #     if num_steps :
-        #         scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optim, num_steps)
-        elif horizon_type == 'auto': 
+        if horizon_type == 'auto': 
             horizon_updated, horizon = select_horizon_list(step, epoch_number, horizon_list, switch_steps)
         elif horizon_type == 'constant': 
             horizon = horizon
@@ -286,10 +285,15 @@ def train(device, model, Ts, train_loader, test_loader, w, grad_clip, lr_schedul
         if test_loader: 
                 if not (step%10): # run validation every 10 steps
                     for x, t_eval in iter(test_loader):
+
+                        
                         with torch.no_grad(): # we won't need gradients for testing
                             # run test data
                             t_eval = t_eval[0,:horizon]
-          
+                            if rescale_loss:
+                                            if horizon_updated:
+                                                _, _, denom_test =  get_maxmindenom(x=x[:, :horizon, :4].permute(1,0,2),dim1=(0),dim2=(0), rescale_dims=rescale_dims)
+
                             test_x_hat = odeint(model, x[:, 0, :4], t_eval, method='rk4', 
                                                 options=dict(step_size=Ts))
 
@@ -297,7 +301,7 @@ def train(device, model, Ts, train_loader, test_loader, w, grad_clip, lr_schedul
                             
                             test_loss_mini = L2_loss(x[:, :horizon, :4].permute(1,0,2) , 
                                                     test_x_hat[:horizon,:,:4], w, param = loss_type,
-                                                    rescale_loss=rescale_loss, denom=denom)
+                                                    rescale_loss=rescale_loss, denom=denom_test)
                             test_loss = test_loss + test_loss_mini.item()
                     test_time = time.time()-t2
                     print('epoch {:4d} | train time {:.2f} | train loss {:8e} | test loss {:8e} | test time {:.2f}  '
