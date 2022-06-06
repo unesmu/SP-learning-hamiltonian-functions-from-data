@@ -466,17 +466,17 @@ def train_test_loss_plot(loss_train,loss_test, epochs, file_path=None,
     if horizons:
         for i, epoch_num in enumerate(horizon_steps[:-1]):
             ax.annotate(
-            'horizon = %d'%horizons[i],
+            '%3d'%horizons[i],
             xy=(epochs[epoch_num], loss_train[epoch_num]), xycoords='data',
-            xytext=(-70, 100), textcoords='offset points',
+            xytext=(-20, 50), textcoords='offset points', #xytext=(-70, 100), textcoords='offset points',
             arrowprops=dict(arrowstyle="->",
                             #connectionstyle="arc,angleA=0,armA=50,rad=10"
                             connectionstyle="angle,angleA=0,angleB=90,rad=10"
                             ))
         ax.annotate(
-        'horizon = %d'%horizons[-1],
+        '%3d'%horizons[-1],
         xy=(epochs[horizon_steps[-1]], loss_train[horizon_steps[-1]]), xycoords='data',
-        xytext=(+20, 100), textcoords='offset points',
+        xytext=(-20, 50), textcoords='offset points', # xytext=(+20, 100), textcoords='offset points',
         arrowprops=dict(arrowstyle="->",
                         #connectionstyle="arc,angleA=0,armA=50,rad=10"
                         connectionstyle="angle,angleA=0,angleB=90,rad=10"
