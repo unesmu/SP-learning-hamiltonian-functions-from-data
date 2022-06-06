@@ -187,10 +187,10 @@ class U_HNN(torch.nn.Module):
         self.input_dim = input_dim
 
         # add learnable dissipation coefficients
-        # torch.nn.Parameter(torch.randn(1)+1) # torch.nn.Parameter(torch.tensor([0.5]))
+        # torch.nn.Parameter(torch.randn(1)+1)
         self.C1_dissip = torch.nn.Parameter(torch.tensor([0.02]).sqrt())
         self.C1_dissip.requires_grad = True
-        # torch.nn.Parameter(torch.randn(1)+1) # torch.nn.Parameter(torch.tensor([0.5]))
+        # torch.nn.Parameter(torch.randn(1)+1) 
         self.C2_dissip = torch.nn.Parameter(torch.tensor([0.02]).sqrt())
         self.C2_dissip.requires_grad = True
 
@@ -286,10 +286,10 @@ class Nes_HDNN(torch.nn.Module):
         self.device = device
         self.dissip = dissip
         # add learnable dissipation coefficients 0.000009, 0.00004
-        # torch.nn.Parameter(torch.randn(1)+1) # torch.nn.Parameter(torch.tensor([0.5]))
+        # torch.nn.Parameter(torch.randn(1)+1)
         self.C1_dissip = torch.nn.Parameter(torch.tensor([0.000009]).sqrt())
         self.C1_dissip.requires_grad = True
-        # torch.nn.Parameter(torch.randn(1)+1) # torch.nn.Parameter(torch.tensor([0.5]))
+        # torch.nn.Parameter(torch.randn(1)+1)
         self.C2_dissip = torch.nn.Parameter(torch.tensor([0.00004]).sqrt())
         self.C2_dissip.requires_grad = True
 
@@ -308,20 +308,10 @@ class Nes_HDNN(torch.nn.Module):
 
             dHdq1, dHdp1, dHdq2, dHdp2 = torch.chunk(dH[0], 4, dim=-1)
 
-            # if self.G_net:
+
             G = self.G_net.forward(q_p)
-            # print(G.device)
-            # else:
-            #     G = x[:,5:]
-            # if self.u_func:
+
             u = self.u_func.forward(t)
-            # print(u.device)
-            # else:
-            #     u = x[:,4]
-            # print('q_p',q_p.shape)
-            # print('G',G.shape)
-            # print('u',u.shape, u)
-            # print('dHdq1',dHdq1.shape)
 
             dq1dt = dHdp1
             dq2dt = dHdp2
@@ -332,9 +322,8 @@ class Nes_HDNN(torch.nn.Module):
             else:
                 dp1dt = -dHdq1 + (G[:, 1]*u).unsqueeze(dim=1)
                 dp2dt = -dHdq2 + (G[:, 3]*u).unsqueeze(dim=1)
+                
             # symplectic gradient
-            # zeros = torch.zeros_like(dq1dt)
-            # , zeros, zeros, zeros, zeros, zeros
             S_h = torch.cat((dq1dt, dp1dt, dq2dt, dp2dt), dim=-1)
             return S_h
 

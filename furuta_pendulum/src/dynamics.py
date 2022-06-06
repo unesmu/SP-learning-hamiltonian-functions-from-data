@@ -30,10 +30,6 @@ def furuta_H(q1, p1, q2, p2, g, Jr, Lr, Mp, Lp):
     C4 = Jp+C2
     C5 = (1/2)*Mp*g*Lp
 
-    # hamiltonian function
-    # print('furuta_H','C4*p2**2',(C4*p2**2).shape)
-    # print('furuta_H','C2*torch.sin(q1)**2 ',(C2*torch.sin(q1)**2 ).shape)
-    # print('furuta_H','2*p1*p2*C3*torch.cos(q1)',(2*p1*p2*C3*torch.cos(q1)).shape)
     H = p1**2 * (C1+C2*torch.sin(q1)**2) + C4*p2**2-2*p1*p2*C3*torch.cos(q1)
     H = (1/2) * (H)/(C1*C4+C4*C2*torch.sin(q1)
                      ** 2 - (C3**2) * (torch.cos(q1)**2))
@@ -58,10 +54,9 @@ def hamiltonian_fn_furuta(coords, g, Jr, Lr, Mp, Lp):
       This function takes the same structure as the one in the SymODEN repository
     '''
     q1, p1, q2, p2 = torch.chunk(coords, 4, dim=-1)  # torch.split(coords,1)
-    # print('hamiltonian_fn_furuta','coords',coords.shape)
-    # print('hamiltonian_fn_furuta','q1',q1.shape)
+
     H = furuta_H(q1, p1, q2, p2, g, Jr, Lr, Mp, Lp)
-    # print('hamiltonian_fn_furuta','H',H.shape)
+
     return H
 
 
@@ -83,30 +78,20 @@ def coord_derivatives_furuta(t, coords, C_q1, C_q2, g, Jr, Lr, Mp, Lp, u_func, g
 
     # Hamiltonian function
     H = hamiltonian_fn_furuta(coords, g, Jr, Lr, Mp, Lp)
-    # print('coord_derivatives_furuta','H',H.shape)
-    # print('coord_derivatives_furuta','coords',coords.shape)
+
     # gradient of the hamiltornian function wrt the generalized coordinates
-    # !! might need to add H.sum() if batches used here later
     dcoords = torch.autograd.grad(H.sum(), coords, create_graph=True)
 
-    # dHdq1, dHdp1, dHdq2, dHdp2 = torch.split(dcoords[0], 1)
     dHdq1, dHdp1, dHdq2, dHdp2 = torch.chunk(dcoords[0], 4, dim=-1)
-    # print('coord_derivatives_furuta','dHdq1',dHdq1.shape)
+
     U = u_func.forward(t)
     G = g_func.forward(coords)
-    # print('coord_derivatives_furuta','U',U.shape)
-    # print('coord_derivatives_furuta','G',G.shape)
-    # print('coord_derivatives_furuta','U * G[1]',(U * G[:,1]).shape)
-    # print('coord_derivatives_furuta','U * G[0]',(U * G[:,0]).shape)
-    # print('coord_derivatives_furuta','C_q1*dHdp1',(C_q1*dHdp1).shape)
-    # print('coord_derivatives_furuta','U * G[:,0].unsqueeze(dim=-1)',((U * G[:,0]).unsqueeze(dim=-1)).shape)
-    # print('coord_derivatives_furuta','U * G[:,0].unsqueeze(dim=1)',((U * G[:,0]).unsqueeze(dim=1)).shape)
+
     dq1dt = dHdp1 + (U * G[:, 0]).unsqueeze(dim=1)
     dp1dt = - dHdq1 - C_q1*dHdp1 + (U * G[:, 1]).unsqueeze(dim=1)
     dq2dt = dHdp2 + (U * G[:, 2]).unsqueeze(dim=1)
     dp2dt = - dHdq2 - C_q2*dHdp2 + (U * G[:, 3]).unsqueeze(dim=1)
-    # print('coord_derivatives_furuta','dq1dt',dq1dt.shape)
-    # print('coord_derivatives_furuta','dp1dt',dp1dt.shape)
+
     return dq1dt, dp1dt, dq2dt, dp2dt
 
 

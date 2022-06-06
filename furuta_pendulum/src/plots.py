@@ -168,7 +168,7 @@ def plot_furuta_hat_nom(device, model, u_func, g_func, utype, gtype, data_loader
         t_plot = time_steps
 
     Ts = t_eval[0]
-    print('Ts', Ts)
+
     # predicted trajectory
     x_hat = odeint(model, x_nom[:, 0, :], t_eval, method='rk4').detach()
     x_hat = x_hat.detach()
@@ -197,7 +197,7 @@ def plot_furuta_hat_nom(device, model, u_func, g_func, utype, gtype, data_loader
     p1_nom = x_nom[n, :t_plot, 1].unsqueeze(dim=0)
     q2_nom = x_nom[n, :t_plot, 2].unsqueeze(dim=0)
     p2_nom = x_nom[n, :t_plot, 3].unsqueeze(dim=0)
-    print('plot_furuta_hat_nom', 'q1_nom', q1_nom.shape)
+
     E_nom, _ = get_energy_furuta(device, time_steps, Ts, u_func, g_func, q1_nom /
                                  w_rescale[0], p1_nom/w_rescale[1], q2_nom/w_rescale[2], p2_nom/w_rescale[3], C_q1, C_q2, g, Jr, Lr, Mp, Lp, time_=t_eval)
     H_nom = furuta_H(q1_nom/w_rescale[0], p1_nom/w_rescale[1],
@@ -211,14 +211,6 @@ def plot_furuta_hat_nom(device, model, u_func, g_func, utype, gtype, data_loader
     fig, ax = plt.subplots(2, 3, figsize=(
         15, 4), constrained_layout=True, sharex=True)  # , sharey=True)
 
-    # to do : make a for loop to add multiple plots
-    # predicted
-    # plot nominal and predicted trajectory on same plot
-
-    # for x in [t_eval, q1_hat, p1_hat, q2_hat, p2_hat, E_hat, H_hat, q1_nom, p1_nom, q2_nom, p2_nom, E_nom, H_nom]:
-    #     x = x.detach().cpu() # transfering everything to cpu memory
-    #     print(x.device)
-    # t_eval = t_eval
 
     if H_or_Input == 'input':
         H_nom = u_func.forward(t_eval.to(device))
@@ -503,15 +495,12 @@ def training_plot(t_eval, train_x, nominal_x):
 
     fig, ax = plt.subplots(2, 2, figsize=(10, 5), constrained_layout=True, sharex=True)# , sharey=True)
     t_eval_cpu = t_eval.detach().cpu()
-    # print('train_x',train_x.shape)#5 300 9
-    # print('t_eval_cpu',t_eval_cpu.shape)#5 300 9
-    # print('nominal_x',nominal_x.shape)#5 300 9
 
     ax[0,0].plot(t_eval_cpu, train_x[:,0,0].detach().cpu(), label='train', c='g')
     ax[1,0].plot(t_eval_cpu, train_x[:,0,1].detach().cpu(), label='train', c='g')
     ax[0,1].plot(t_eval_cpu, train_x[:,0,2].detach().cpu(), label='train', c='g')
     ax[1,1].plot(t_eval_cpu, train_x[:,0,3].detach().cpu(), label='train', c='g')
-    # print(nominal_x.shape)
+
     ax[0,0].plot(t_eval_cpu, nominal_x[0,:,0].detach().cpu(), label='nominal')
     ax[1,0].plot(t_eval_cpu, nominal_x[0,:,1].detach().cpu(), label='nominal')
     ax[0,1].plot(t_eval_cpu, nominal_x[0,:,2].detach().cpu(), label='nominal')
