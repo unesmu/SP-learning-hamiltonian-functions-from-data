@@ -217,7 +217,7 @@ def train(device, model, Ts, train_loader, test_loader, w, grad_clip, lr_schedul
 
         # increase the model size and initialie the new parameters
         if resnet_config:
-            model = multilevel_strategy_update(device, step, model, resnet_config)
+            model = multilevel_strategy_update(device, step, model, resnet_config, switch_steps)
 
         model.train()
         

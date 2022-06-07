@@ -3,8 +3,9 @@ import torch
 from torchdiffeq import odeint_adjoint as odeint_adjoint
 # func must be a nn.Module when using the adjoint method
 from torchdiffeq import odeint as odeint
-
+import random
 import json
+import numpy as np
 
 from .models import *
 from .dynamics import *
@@ -170,7 +171,9 @@ def get_maxmindenom(x, dim1, dim2, rescale_dims):
 
 def name_from_params(Ts, rescale_loss, weights, epoch_number, num_params, utype,
                      model_name, num_trajectories, furuta_type,
-                     noise_std, grad_clip, lr_schedule, C_q1, C_q2, horizon, min_max_rescale):
+                     noise_std, grad_clip, lr_schedule, C_q1, C_q2, horizon, min_max_rescale,w_rescale=None):
+    
+
 
     weights_title = ' | weights = ' + str(weights)
     save_prefix = '{:d}e_p{:d}k_Ts{:1.3f}_'.format(
@@ -196,7 +199,9 @@ def name_from_params(Ts, rescale_loss, weights, epoch_number, num_params, utype,
         save_prefix = save_prefix + 'rescaledloss_'
     if min_max_rescale:
         save_prefix = save_prefix + 'trajminmaxrescale_'
-
+    if w_rescale is not None :
+        if w_rescale is not [1,1,1,1]:
+            save_prefix = save_prefix + 'stdrescale_'
     return save_prefix
 
 def is_same_size(horizon_list, switch_steps):
@@ -204,3 +209,12 @@ def is_same_size(horizon_list, switch_steps):
         print('horizon_list and switch_steps have the same size')
     else:
         raise ValueError('horizon_list and switch_steps do NOT have the same size')
+
+def set_all_seeds(manualSeed = 123, new_results=False):
+    # Set random seed for reproducibility
+    if new_results:
+        manualSeed = random.randint(1, 10000) # use if you want new results
+    print("Random Seed: ", manualSeed)
+    random.seed(manualSeed)
+    torch.manual_seed(manualSeed)
+    np.random.seed(manualSeed)

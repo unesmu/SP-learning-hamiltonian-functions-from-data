@@ -309,7 +309,6 @@ class Input_HNN(torch.nn.Module):
 
             dHdq1, dHdp1, dHdq2, dHdp2 = torch.chunk(dH[0], 4, dim=-1)
 
-
             G = self.G_net.forward(q_p)
 
             u = self.u_func.forward(t)
