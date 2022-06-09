@@ -55,7 +55,7 @@ class TrajectoryDataset_furuta(Dataset):
             dq1dt = self.dq1dt[idx]
             dq2dt = self.dq2dt[idx]
 
-            x = torch.vstack((q1, dq1dt, q2, dq2dt))
+            x = torch.stack((q1, dq1dt, q2, dq2dt), dim=1)
 
         t_eval = self.t_eval
 

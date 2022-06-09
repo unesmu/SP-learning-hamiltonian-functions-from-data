@@ -117,10 +117,10 @@ def load_data_device(device, init_method, w_rescale, u_func=None, g_func=None, t
     q1, p1, q2, p2, energy, derivatives, t_eval = multiple_trajectories_furuta('cpu', init_method, time_steps, num_trajectories, u_func, g_func,
                                                                                None, Ts, noise_std, C_q1, C_q2, g, Jr,  Lr,  Mp, Lp)  # u, G,
 
-    q1 = (q1*w_rescale[0]).to(device)
-    p1 = (p1*w_rescale[1]).to(device)
-    q2 = (q2*w_rescale[2]).to(device)
-    p2 = (p2*w_rescale[3]).to(device)
+    q1 = (q1*w_rescale[0]).detach().to(device)
+    p1 = (p1*w_rescale[1]).detach().to(device)
+    q2 = (q2*w_rescale[2]).detach().to(device)
+    p2 = (p2*w_rescale[3]).detach().to(device)
 
     if min_max_rescale:
         if rescale_dims[0]:
@@ -136,9 +136,9 @@ def load_data_device(device, init_method, w_rescale, u_func=None, g_func=None, t
             p2 = (p2-p2.amin(dim=(1)).unsqueeze(dim=1)) / \
                 ((p2.amax(dim=(1))-p2.amin(dim=(1))).abs().unsqueeze(dim=1))
 
-    energy = energy.to(device)
-    derivatives = derivatives.to(device)
-    t_eval = t_eval.to(device)
+    energy = energy.detach().to(device)
+    derivatives = derivatives.detach().to(device)
+    t_eval = t_eval.detach().to(device)
 
     # dataloader to load data in batches
     train_loader, test_loader = data_loader_furuta(q1, p1, q2, p2, energy, derivatives, t_eval, batch_size=batch_size,
