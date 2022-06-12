@@ -2,15 +2,18 @@
 
 ## Abstract:
 
-Repository containing code for my semester project "Learning Hamiltonian functions from data" in the LA lab [TO DO]
-
-## Methods:
-
-[TO DO]
+Repository containing code for my semester project "Learning Hamiltonian functions from data" in the LA lab
 
 ## Repository content:
 
-[TO DO]
+- `simple pendulum` : this folder contains the code and experiments that were run on the simplependulum
+- `furuta pendulum` : this folder contains the code and experiments that were run on the Furuta pendulum
+
+Both of these folders are organized in the following way :
+
+- `data`: contains folders that contain experiment runs, where the plots model stats and training and test sets are saved
+- `notebook` : contains the notebooks that run .py files in the `src` folder
+- `src`: contains the .py files used to run the experiments
 
 ## Requirements / How to run:
 
@@ -20,21 +23,4 @@ If you will run this on your own computer:
 
 2. Open terminal (anaconda terminal or git bash) and run :`pip install -r requirements.txt `
 
-If you will run this code using google colab:
-
-[TO DO]
-
-```
-conda create -y -n pds37 python=3.7 scipy pandas numpy matplotlibconda activate pds37
-conda install pytorch torchvision torchaudio cudatoolkit=10.2 -c pytorch
-conda install pytorch torchvision torchaudio cpuonly -c pytorchconda install
-conda install -c conda-forge ipywidgetspip install -U scikit-learnconda install -c conda-forge matplotlib
-pip install autograd
-conda install -c conda-forge imageioconda install pandasconda create -y -n optmlgan python=3.7.13 scipy pandas numpy matplotlib jupyterlab nb_conda_kernels
-conda install pytorch torchvision torchaudio cpuonly -c pytorch
-```
-
-
-## Credits:
-
-[TO DO]
+If you will run this code using google colab download this repository, place it in a folder in your google drive and then follow the instructions in the first cell of the notebooks in each folder.
