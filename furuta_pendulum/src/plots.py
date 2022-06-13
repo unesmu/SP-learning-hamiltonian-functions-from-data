@@ -211,13 +211,13 @@ def plot_furuta_hat_nom(device, model, u_func, g_func, utype, gtype, data_loader
     fig, ax = plt.subplots(2, 3, figsize=(
         15, 4), constrained_layout=True, sharex=True)  # , sharey=True)
 
-
     if H_or_Input == 'input':
         H_nom = u_func.forward(t_eval.to(device))
         ax[1, 2].set_title('Input', fontsize=10)
         ax[1, 2].set_xlabel('time (s)')
         ax[1, 2].set_ylabel('u')
         t_eval = t_eval = t_eval.detach().cpu()
+
     else:
         ax[1, 2].set_title('Hamiltonian', fontsize=10)
         ax[1, 2].set_xlabel('time (s)')
@@ -229,14 +229,25 @@ def plot_furuta_hat_nom(device, model, u_func, g_func, utype, gtype, data_loader
         # p2 = p2.cpu()
         # E = E.cpu()
         # H = H.cpu()
+        label_train = 'train'
+        color1= 'g'
+        if only_pred:
+            color1='C0'
+        ax[0, 0].plot(t_eval[:t_max], q1[:t_max], label=label_train, c=color1)
+        ax[0, 0].plot(t_eval[t_max-1:], q1[t_max-1:], label=label, c='C0')
 
-        ax[0, 0].plot(t_eval, q1, label=label)
-        ax[1, 0].plot(t_eval, p1, label=label)
-        ax[0, 1].plot(t_eval, q2, label=label)
-        ax[1, 1].plot(t_eval, p2, label=label)
-        ax[0, 2].plot(t_eval, E, label=label)
-        ax[1, 2].plot(t_eval, H, label=label)
+        ax[1, 0].plot(t_eval[:t_max], p1[:t_max], label=label_train, c=color1)
+        ax[1, 0].plot(t_eval[t_max-1:], p1[t_max-1:], label=label, c='C0')
 
+        ax[0, 1].plot(t_eval[:t_max], q2[:t_max], label=label_train, c=color1)
+        ax[0, 1].plot(t_eval[t_max-1:], q2[t_max-1:], label=label, c='C0')
+
+        ax[1, 1].plot(t_eval[:t_max], p2[:t_max], label=label_train, c=color1)
+        ax[1, 1].plot(t_eval[t_max-1:], p2[t_max-1:], label=label, c='C0')
+
+        ax[0, 2].plot(t_eval[:t_max], E[:t_max], label=label_train, c=color1)
+        ax[0, 2].plot(t_eval[t_max-1:], E[t_max-1:], label=label, c='C0')
+        ax[1, 2].plot(t_eval[:], H[:], label=label_train, c='C0')
     for q1, p1, q2, p2, E, H, label in [[q1_hat, p1_hat, q2_hat, p2_hat, E_hat, H_hat, 'prediction']]:
 
         q1 = q1.cpu()
@@ -245,40 +256,40 @@ def plot_furuta_hat_nom(device, model, u_func, g_func, utype, gtype, data_loader
         p2 = p2.cpu()
         E = E.cpu()
         H = H.cpu()
-        label_train = 'train'
-        color = 'g'
+        label_train = 'prediction'
+        color = 'r'
         if only_pred:
             t_max = time_steps
             color = 'r'
             label_train = 'prediction'
             show_pred = False
 
-        ax[0, 0].plot(t_eval[:t_max], q1[:t_max], label=label_train, c=color)
-        if show_pred:
-            ax[0, 0].plot(t_eval[t_max-1:], q1[t_max-1:], label=label, c='r')
+        ax[0, 0].plot(t_eval[:], q1[:], label=label_train, c=color,linewidth=1)
+        # if show_pred:
+        #     ax[0, 0].plot(t_eval[t_max-1:], q1[t_max-1:], label=label, c='r')
 
-        ax[1, 0].plot(t_eval[:t_max], p1[:t_max], label=label_train, c=color)
-        if show_pred:
-            ax[1, 0].plot(t_eval[t_max-1:], p1[t_max-1:], label=label, c='r')
+        ax[1, 0].plot(t_eval[:], p1[:], label=label_train, c=color,linewidth=1)
+        # if show_pred:
+        #     ax[1, 0].plot(t_eval[t_max-1:], p1[t_max-1:], label=label, c='r')
 
-        ax[0, 1].plot(t_eval[:t_max], q2[:t_max], label=label_train, c=color)
-        if show_pred:
-            ax[0, 1].plot(t_eval[t_max-1:], q2[t_max-1:], label=label, c='r')
+        ax[0, 1].plot(t_eval[:], q2[:], label=label_train, c=color,linewidth=1)
+        # if show_pred:
+        #     ax[0, 1].plot(t_eval[t_max-1:], q2[t_max-1:], label=label, c='r')
 
-        ax[1, 1].plot(t_eval[:t_max], p2[:t_max], label=label_train, c=color)
-        if show_pred:
-            ax[1, 1].plot(t_eval[t_max-1:], p2[t_max-1:], label=label, c='r')
+        ax[1, 1].plot(t_eval[:], p2[:], label=label_train, c=color,linewidth=1)
+        # if show_pred:
+        #     ax[1, 1].plot(t_eval[t_max-1:], p2[t_max-1:], label=label, c='r')
 
-        ax[0, 2].plot(t_eval[:t_max], E[:t_max], label=label_train, c=color)
-        if show_pred:
-            ax[0, 2].plot(t_eval[t_max-1:], E[t_max-1:], label=label, c='r')
+        ax[0, 2].plot(t_eval[:], E[:], label=label_train, c=color,linewidth=1)
+        # if show_pred:
+        #     ax[0, 2].plot(t_eval[t_max-1:], E[t_max-1:], label=label, c='r')
 
         if H_or_Input == 'H':
-            ax[1, 2].plot(t_eval[:t_max], H[:t_max],
+            ax[1, 2].plot(t_eval[:], H[:t_max],
                           label=label_train, c=color)
-            if show_pred:
-                ax[1, 2].plot(t_eval[t_max-1:], H[t_max-1:],
-                              label=label, c='r')
+            # if show_pred:
+            #     ax[1, 2].plot(t_eval[t_max-1:], H[t_max-1:],
+            #                   label=label, c='r')
 
     # for j in range(3): # show all of the legends
     #   for i in range(2):
