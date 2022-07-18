@@ -15,20 +15,20 @@ purpose.
   <img width="800"  src="https://github.com/unesmu/SP-learning-hamiltonian-functions-from-data/blob/d22b3a6378b258452aaf5858ee02db44024f9e44/furuta_pendulum/data/TRAJECTORIES_test_set5test%20(1).png"> 
 </p>
 <p align="center">
-    <strong>Figure 1 : </strong> Expanding-wide-HNN model experiments with the Furuta pendulum when G is known (See the <a href="https://github.com/unesmu/SP-learning-hamiltonian-functions-from-data/blob/f549d406f0ca7460e64a615c0808ce2bf6217d33/report.pdf">report</a> for more details and figures)  
+    <strong>Figure 1: </strong> Expanding-wide-HNN model experiments with the Furuta pendulum when G is known (See the <a href="https://github.com/unesmu/SP-learning-hamiltonian-functions-from-data/blob/f549d406f0ca7460e64a615c0808ce2bf6217d33/report.pdf">report</a> for more details and figures)  
 </p>
 <p align="center">
   <img width="800"  src="https://github.com/unesmu/SP-learning-hamiltonian-functions-from-data/blob/d22b3a6378b258452aaf5858ee02db44024f9e44/simple_pendulum/101hz_simple_pend.png"> 
 </p>
 <p align="center">
-    <strong>Figure 2 : </strong> Input-HNN model experiments with the simple pendulum when G is known
+    <strong>Figure 2: </strong> Input-HNN model experiments with the simple pendulum when G is known
 </p>
 
 <p align="center">
   <img width="500"  src="https://github.com/unesmu/SP-learning-hamiltonian-functions-from-data/blob/a415df09f39e9ad1b6671c8754b929b747bc3b57/furuta_pendulum/data/FIG_-IHNN%20(1).png"> 
 </p>
 <p align="center">
-    <strong>Figure 3 : Input-HNN model summary </strong>  
+    <strong>Figure 3: Input-HNN model summary </strong>  
 </p>
 
 
