@@ -23,6 +23,7 @@ purpose.
 <p align="center">
     <strong>Figure 2 : </strong> Input-HNN model experiments with the simple pendulum when G is known
 </p>
+
 ## Repository content
 
 - `simple_pendulum` : this folder contains the code and experiments that were run on the simplependulum
