@@ -14,11 +14,12 @@ from .trajectories import *
 
 
 def collect_gradients(named_parameters):
-    '''Plots the gradients flowing through different layers in the net during training.
-    Can be used for checking for possible gradient vanishing / exploding problems.
+    '''
+    Collect the gradients of all the named layers in a model
 
-    Usage: Plug this function in Trainer class after loss.backwards() as 
-    "plot_grad_flow(self.model.named_parameters())" to visualize the gradient flow'''
+    UCall after loss.backwards():
+    "collect_gradients(self.model.named_parameters())" to collect gradients and then use
+    '''
 
     all_grads = []
     layers = []
@@ -72,13 +73,12 @@ def set_furuta_params(which='fake'):
 
 def count_parameters(model):
     '''
-    from https://discuss.pytorch.org/t/how-do-i-check-the-number-of-parameters-of-a-model/4325/9
-    Description:
-
+    Returns the number of learnable parameters in a model
     Inputs:
-
+        model(nn.Module): the model for which the number of parameters are desired
     Outpus:
-
+        _ (int): number of learnable parameters in the model
+    Source : https://discuss.pytorch.org/t/how-do-i-check-the-number-of-parameters-of-a-model/4325/9
     '''
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
@@ -97,7 +97,7 @@ def load_model_nes_hdnn(device, utype, u_func=None, hidden_dim=90, nb_hidden_lay
     H_net = MLP(input_dim=4, hidden_dim=90, nb_hidden_layers=4,
                 output_dim=1, activation='x+sin(x)^2')
     model = Input_HNN(utype=utype, u_func=u_func,
-                     G_net=G_net, H_net=H_net, device=device)
+                      G_net=G_net, H_net=H_net, device=device)
     model.to(device)
     return model
 
@@ -143,21 +143,20 @@ def load_data_device(device, init_method, w_rescale, u_func=None, g_func=None, t
     # dataloader to load data in batches
     train_loader, test_loader = data_loader_furuta(q1, p1, q2, p2, energy, derivatives, t_eval, batch_size=batch_size,
                                                    shuffle=shuffle, proportion=proportion, coord_type=coord_type)  # u, G,
-    return train_loader, test_loader  
+    return train_loader, test_loader
 
 
-def save_stats(stats, stats_path):
-    with open(stats_path, 'w') as file:
-        file.write(json.dumps(stats))  
+def save_dict(dict, dict_path):
+    with open(dict_path, 'w') as file:
+        file.write(json.dumps(dict))
     return
 
 
-def read_dict(stats_path):
-    # read the stats txt file
-    with open(stats_path) as f:
-        data = f.read()
-    data = json.loads(data)
-    return data
+def read_dict(dict_path):
+    with open(dict_path) as f:
+        dict = f.read()
+    dict = json.loads(dict)
+    return dict
 
 
 def get_maxmindenom(x, dim1, dim2, rescale_dims):
@@ -171,9 +170,7 @@ def get_maxmindenom(x, dim1, dim2, rescale_dims):
 
 def name_from_params(Ts, rescale_loss, weights, epoch_number, num_params, utype,
                      model_name, num_trajectories, furuta_type,
-                     noise_std, grad_clip, lr_schedule, C_q1, C_q2, horizon, min_max_rescale,w_rescale=None):
-    
-
+                     noise_std, grad_clip, lr_schedule, C_q1, C_q2, horizon, min_max_rescale, w_rescale=None):
 
     weights_title = ' | weights = ' + str(weights)
     save_prefix = '{:d}e_p{:d}k_Ts{:1.3f}_'.format(
@@ -199,21 +196,24 @@ def name_from_params(Ts, rescale_loss, weights, epoch_number, num_params, utype,
         save_prefix = save_prefix + 'rescaledloss_'
     if min_max_rescale:
         save_prefix = save_prefix + 'trajminmaxrescale_'
-    if w_rescale is not None :
-        if w_rescale is not [1,1,1,1]:
+    if w_rescale is not None:
+        if w_rescale is not [1, 1, 1, 1]:
             save_prefix = save_prefix + 'stdrescale_'
     return save_prefix
+
 
 def is_same_size(horizon_list, switch_steps):
     if len(horizon_list) == len(switch_steps):
         print('horizon_list and switch_steps have the same size')
     else:
-        raise ValueError('horizon_list and switch_steps do NOT have the same size')
+        raise ValueError(
+            'horizon_list and switch_steps do NOT have the same size')
 
-def set_all_seeds(manualSeed = 123, new_results=False):
+
+def set_all_seeds(manualSeed=123, new_results=False):
     # Set random seed for reproducibility
     if new_results:
-        manualSeed = random.randint(1, 10000) # use if you want new results
+        manualSeed = random.randint(1, 10000)  # use if you want new results
     print("Random Seed: ", manualSeed)
     random.seed(manualSeed)
     torch.manual_seed(manualSeed)

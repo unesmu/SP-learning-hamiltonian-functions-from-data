@@ -1,26 +1,66 @@
 # Semester project : Learning Hamiltonian functions from data
 
-## Abstract:
+## Abstract
 
-Repository containing code for my semester project "Learning Hamiltonian functions from data" in the LA lab
+Recent advances in physics-informed neural networks have been successful at using neural networks to capture the dynamics of physical systems such as the simple and double
+pendulum[1][2][3][4]. These neural networks are endowed with physics-based inductive biases
+by incorporating Hamiltonian dynamics in their architecture. These architectures leverage
+neural ordinary differential equations [5] for this purpose. The goal of this project is to
+design physics-informed architectures based on the port-Hamiltonian framework to model
+dynamical systems. The simple pendulum and the Furuta pendulum were selected for this
+purpose.
 
-## Repository content:
+<p align="center">
+  <img width="800" height="350" src="https://github.com/TheodorSergeev/optml_gan/blob/aa8ebb5822128ca39377c1f96254e47774828f6d/img/readme_img.png"> 
+</p>
+TO DO: fix picture
+
+## Repository content
 
 - `simple_pendulum` : this folder contains the code and experiments that were run on the simplependulum
 - `furuta_pendulum` : this folder contains the code and experiments that were run on the Furuta pendulum
 
 Both of these folders are organized in the following way :
 
-- `data`: contains folders that contain experiment runs, where the plots model stats and training and test sets are saved
-- `notebook` : contains the notebooks that run .py files in the `src` folder
-- `src`: contains the .py files used to run the experiments
+- `data`: contains folders that contains experiment runs, where the plots, models, stats, and train/test sets are saved
+- `notebook` : contains the jupyter notebooks that run script files in the `src` folder
+- `src`: contains the python script files used to run the experiments
 
-## Requirements / How to run:
+## Requirements
 
-If you will run this on your own computer:
+```
+matplotlib=3.5.1
+numpy=1.21.5
+torch=1.10.2
+torchdiffeq=0.2.2
+```
 
-1) Create a virtual environment using either conda or venv, then activate that virtual environment.
+## How to run
 
-2. Open terminal (anaconda terminal or git bash), cd to this repository's directory, and run :`pip install -r requirements.txt `
+### If you will run this on your own computer
 
-If you will run this code using google colab download this repository, place it in a folder in your google drive and then follow the instructions in the first cell of the notebooks in each folder.
+First create a virtual environment using either conda or venv, then activate that virtual environment.
+
+1. Either create a new environment using anaconda: `TODO`
+2. Or create a new environment using venv: `TODO`
+
+Then open terminal (anaconda terminal or git bash), cd to this repository's directory, and run : `pip install -r requirements.txt`
+
+### If you will run this code using google colab
+
+First download this repository, place it in a folder in your google drive and then follow the instructions in the first cell of the notebooks in each folder.
+
+## References
+
+[1] S. Greydanus, M. Dzamba, and J. Yosinski, “Hamiltonian neural networks,” Advances
+in Neural Information Processing Systems, vol. 32, 2019.
+[2] Y. D. Zhong, B. Dey, and A. Chakraborty, “Symplectic ode-net: Learning hamiltonian
+dynamics with control,” arXiv preprint arXiv:1909.12077, 2019.  
+[3] ——, “Dissipative symoden: Encoding hamiltonian dynamics with dissipation and con-
+trol into deep learning,” arXiv preprint arXiv:2002.08860, 2020.  
+[4] S. A. Desai, M. Mattheakis, D. Sondak, P. Protopapas, and S. J. Roberts, “Port-
+hamiltonian neural networks for learning explicit time-dependent dynamical systems,”
+Physical Review E, vol. 104, no. 3, p. 034312, 2021.  
+[5] R. T. Chen, Y. Rubanova, J. Bettencourt, and D. K. Duvenaud, “Neural ordinary dif-
+ferential equations,” Advances in neural information processing systems, vol. 31, 2018.  
+

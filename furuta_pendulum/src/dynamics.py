@@ -1,19 +1,24 @@
 import torch
-
-from torchdiffeq import odeint_adjoint as odeint_adjoint 
-# func must be a nn.Module when using the adjoint method
 from torchdiffeq import odeint as odeint
+
 
 def furuta_H(q1, p1, q2, p2, g, Jr, Lr, Mp, Lp):
     '''
     Description:
-      Hamiltonian function for the Furuta pendulum 
-    Inputs : 
-      - q1,p1,q2,p2 (tensors) : Generalized coordinates 
-    Outputs : 
-      - H (tensor) : Hamiltonian function 
-    Credits : 
-      - Equations & constants are from Jonas's report
+        Hamiltonian function for the Furuta pendulum 
+
+    Inputs: 
+        - q1,p1,q2,p2 (tensors): Generalized coordinates 
+        - g (floats): gravitational acceleration
+        - Jr (floats): Inertia of rotary arm 2
+        - Lr (floats): Length of rotary arm 2 (moves with coordinate q1 or alpha in report)
+        - Mp (floats): mass af the weight attached at the edge of arm 2
+        - Lp (floats): Length of rotary arm 1 (moves with coordinate q2 or theta in report)
+    Outputs: 
+        - H (tensor): Hamiltonian function 
+      
+    Credits: 
+        - Equations & constants are from Jonas's report see reference [7] from my report
     '''
 
     # system constants
@@ -26,6 +31,7 @@ def furuta_H(q1, p1, q2, p2, g, Jr, Lr, Mp, Lp):
     C4 = Jp+C2
     C5 = (1/2)*Mp*g*Lp
 
+    # hamiltonian function
     H = p1**2 * (C1+C2*torch.sin(q1)**2) + C4*p2**2-2*p1*p2*C3*torch.cos(q1)
     H = (1/2) * (H)/(C1*C4+C4*C2*torch.sin(q1)
                      ** 2 - (C3**2) * (torch.cos(q1)**2))
@@ -37,19 +43,19 @@ def furuta_H(q1, p1, q2, p2, g, Jr, Lr, Mp, Lp):
 def hamiltonian_fn_furuta(coords, g, Jr, Lr, Mp, Lp):
     '''
     Description:
-      Hamiltonian function for the Furuta pendulum, wraps furuta_H so that it is 
-      the right format for ODEint
+        Hamiltonian function for the Furuta pendulum, wraps furuta_H() so that it is in
+        the right format for ODEint
 
-    Inputs : 
-      - coords (tensor) : vector containing generalized coordinates q1,p1,q2,p2
+    Inputs: 
+        - coords (tensor): vector containing generalized coordinates q1,p1,q2,p2
+        - g, Jr, Lr, Mp, Lp (floats): furuta pendulum parameters (same as in furuta_H())
+      Outputs:
+        - H (tensor): Scalar Hamiltonian function
 
-    Outputs :
-      - H (tensor) : Scalar Hamiltonian function
-
-    Credits : 
-      This function takes the same structure as the one in the SymODEN repository
+    Credits: 
+        This function takes the same structure as the one in the SymODEN repository
     '''
-    q1, p1, q2, p2 = torch.chunk(coords, 4, dim=-1)  # torch.split(coords,1)
+    q1, p1, q2, p2 = torch.chunk(coords, 4, dim=-1)
 
     H = furuta_H(q1, p1, q2, p2, g, Jr, Lr, Mp, Lp)
 
@@ -59,15 +65,17 @@ def hamiltonian_fn_furuta(coords, g, Jr, Lr, Mp, Lp):
 def coord_derivatives_furuta(t, coords, C_q1, C_q2, g, Jr, Lr, Mp, Lp, u_func, g_func):
     '''
     Description:
-        Returns the derivatives of the generalized coordinates
+        Returns the derivatives of the generalized coordinates with respect
+        to (w.r.t) time
 
-    Inputs : 
-      - coords (tensor) : vector containing generalized coordinates q1,p1,q2,p2
-      - C_q1 (float) : coefficient of friction related to p1 ( and q1)
-      - C_q2 (float) : coefficient of friction related to p2 ( and q2)
+    Inputs: 
+        - coords (tensor): vector containing generalized coordinates q1,p1,q2,p2
+        - C_q1 (float): coefficient of friction related to p1 (and q1)
+        - C_q2 (float): coefficient of friction related to p2 (and q2)
+        - g, Jr, Lr, Mp, Lp (floats): furuta pendulum parameters
 
-    Outputs :
-      - dq1dt, dp1dt, dq2dt, dp2dt (tensors) : Derivatives w.r.t coords
+    Outputs:
+        - dq1dt, dp1dt, dq2dt, dp2dt (tensors): Derivatives w.r.t coords
     '''
     if coords.requires_grad is not True:
         coords.requires_grad = True
@@ -77,12 +85,13 @@ def coord_derivatives_furuta(t, coords, C_q1, C_q2, g, Jr, Lr, Mp, Lp, u_func, g
 
     # gradient of the hamiltornian function wrt the generalized coordinates
     dcoords = torch.autograd.grad(H.sum(), coords, create_graph=True)
-
     dHdq1, dHdp1, dHdq2, dHdp2 = torch.chunk(dcoords[0], 4, dim=-1)
 
+    # evaluate input scalar u and matrix G
     U = u_func.forward(t)
     G = g_func.forward(coords)
 
+    # symplectic gradient / derivatives of the generalized coordinates w.r.t time
     dq1dt = dHdp1 + (U * G[:, 0]).unsqueeze(dim=1)
     dp1dt = - dHdq1 - C_q1*dHdp1 + (U * G[:, 1]).unsqueeze(dim=1)
     dq2dt = dHdp2 + (U * G[:, 2]).unsqueeze(dim=1)
@@ -94,18 +103,22 @@ def coord_derivatives_furuta(t, coords, C_q1, C_q2, g, Jr, Lr, Mp, Lp, u_func, g
 def dynamics_fn_furuta(t, coords, C_q1, C_q2, g, Jr, Lr, Mp, Lp, u_func, g_func):
     '''
     Description:
-    Function that returns the gradient (in form of a function) of a Hamiltonian function
-    Inputs : 
-      - t () : 
-      - coords () : generalized coordinates
-      - u () : system input
-      - C () : dissipation coefficient
+        Function that returns the gradient (in form of a function) of a Hamiltonian function
+    
+    Inputs: 
+        - t (tensor): time at which the derivaties must be evaluated
+        - coords (tensor): vector containing generalized coordinates q1,p1,q2,p2
+        - C_q1 (float): coefficient of friction related to p1 (and q1)
+        - C_q2 (float): coefficient of friction related to p2 (and q2)
+        - g, Jr, Lr, Mp, Lp (floats): furuta pendulum parameters
+        - u_func (function): input scalar function
+        - g_func (function): input matrix function
 
-    Outputs :
-      - S () : Symplectic gradient
+    Outputs:
+        - S (tensor): Symplectic gradient / derivatives of the generalized coordinates w.r.t time
 
-    Credits : 
-      - This function has a similar structure as the one in the SymODEN repository
+    Credits: 
+        - This function has a similar structure as the one in the SymODEN repository
     '''
 
     dq1dt, dp1dt, dq2dt, dp2dt = coord_derivatives_furuta(
@@ -119,22 +132,58 @@ def dynamics_fn_furuta(t, coords, C_q1, C_q2, g, Jr, Lr, Mp, Lp, u_func, g_func)
 
 
 def chirp_fun(t, T=1.5, f0=1, f1=50, scale=1):
+    '''
+    Description:
+    
+    Inputs: 
+        - ():
+
+    Outputs:
+
+    '''
     # https://en.wikipedia.org/wiki/Chirp
     c = (f1-f0)/T
     return torch.sin(2*torch.pi*(c*t**2/2 + f0*t))*scale
 
 
 def multi_sine(t, scale=0.5):
+    '''
+    Description:
+    
+    Inputs: 
+        - ():
+
+    Outputs:
+
+    '''
     f = torch.tensor([2, 10, 3, 4], device=t.device).unsqueeze(dim=1)
     A = torch.tensor([2, 0.5, 0.3, 0.8], device=t.device).unsqueeze(dim=1)
     return (A*torch.sin(2*torch.pi*t*f)).sum(dim=0)*scale
 
 
 def sine_fun(t, scale=0.5, f=1):
+    '''
+    Description:
+    
+    Inputs: 
+        - ():
+
+    Outputs:
+
+    '''
     return (scale*torch.sin(2*torch.pi*t*f))
 
 
 def step_fun(t, t1=0.05, scale=0.1):
+    '''
+    Description:
+    
+    Inputs: 
+        - ():
+
+    Outputs:
+
+    '''
     f = torch.zeros_like(t)
     f[t < t1] = 0
     f[~(t < t1)] = scale
@@ -142,6 +191,15 @@ def step_fun(t, t1=0.05, scale=0.1):
 
 
 class U_FUNC():
+    '''
+    Description:
+    
+    Inputs: 
+        - ():
+
+    Outputs:
+
+    '''
     def __init__(self, utype=None, params={}):
         super(U_FUNC).__init__()
         self.utype = utype
@@ -174,6 +232,15 @@ class U_FUNC():
 
 
 class G_FUNC():
+    '''
+    Description:
+    
+    Inputs: 
+        - ():
+
+    Outputs:
+        - ():
+    '''
     def __init__(self, gtype=None, params={}):
         super(G_FUNC).__init__()
         self.gtype = gtype
@@ -200,6 +267,6 @@ class G_FUNC():
             g = torch.stack((torch.zeros(q1.shape[0], device=q1.device),  # (q1,p1,q2,p2)
                              torch.zeros(q1.shape[0], device=q1.device),
                              torch.zeros(q1.shape[0], device=q1.device),
-                            torch.zeros(q1.shape[0], device=q1.device)), dim=dimension)
+                             torch.zeros(q1.shape[0], device=q1.device)), dim=dimension)
         g.requires_grad = False
         return g
