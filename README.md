@@ -11,9 +11,11 @@ dynamical systems. The simple pendulum and the Furuta pendulum were selected for
 purpose.
 
 <p align="center">
-  <img width="800" height="350" src="https://github.com/TheodorSergeev/optml_gan/blob/aa8ebb5822128ca39377c1f96254e47774828f6d/img/readme_img.png"> 
+  <img width="800"  src="https://github.com/unesmu/SP-learning-hamiltonian-functions-from-data/blob/d22b3a6378b258452aaf5858ee02db44024f9e44/simple_pendulum/101hz_simple_pend.png"> 
 </p>
-TO DO: fix picture
+<p align="center">
+  <img width="800"  src="https://github.com/unesmu/SP-learning-hamiltonian-functions-from-data/blob/d22b3a6378b258452aaf5858ee02db44024f9e44/furuta_pendulum/data/TRAJECTORIES_test_set5test%20(1).png"> 
+</p>
 
 ## Repository content
 
