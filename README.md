@@ -28,7 +28,7 @@ purpose.
   <img width="500"  src="https://github.com/unesmu/SP-learning-hamiltonian-functions-from-data/blob/a415df09f39e9ad1b6671c8754b929b747bc3b57/furuta_pendulum/data/FIG_-IHNN%20(1).png"> 
 </p>
 <p align="center">
-    <strong>Figure 3 : </strong>  
+    <strong>Figure 3 : Input-HNN model summary </strong>  
 </p>
 
 
