@@ -24,6 +24,16 @@ purpose.
     <strong>Figure 2 : </strong> Input-HNN model experiments with the simple pendulum when G is known
 </p>
 
+<p align="center">
+  <img width="500"  src="https://github.com/unesmu/SP-learning-hamiltonian-functions-from-data/blob/a415df09f39e9ad1b6671c8754b929b747bc3b57/furuta_pendulum/data/FIG_-IHNN%20(1).png"> 
+</p>
+<p align="center">
+    <strong>Figure 3 : </strong>  
+</p>
+
+
+
+
 ## Repository content
 
 - `simple_pendulum` : this folder contains the code and experiments that were run on the simplependulum
