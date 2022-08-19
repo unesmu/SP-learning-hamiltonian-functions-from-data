@@ -6,10 +6,10 @@ class TrajectoryDataset(Dataset):
     '''
     
     '''
-    def __init__(self, q, p, t_eval):
-        self.q = q
-        self.p = p
-        self.t_eval = t_eval
+    def __init__(self, device, q, p, t_eval):
+        self.q = q.to(device)
+        self.p = p.to(device)
+        self.t_eval = t_eval.to(device)
 
     def __len__(self):
         return self.q.shape[1]
@@ -21,19 +21,19 @@ class TrajectoryDataset(Dataset):
         x = torch.stack((q,p),dim=1)
         return x, t_eval
 
-def data_loader(q, p, t_eval, batch_size, shuffle = True, proportion = 0.5):
+def data_loader(q, p, t_eval, batch_size, device, shuffle = True, proportion = 0.5):
     '''
+    
     '''
     # split  into train and test 
     if proportion:
 
-        full_dataset = TrajectoryDataset(q, p, t_eval)
+        full_dataset = TrajectoryDataset(device, q, p, t_eval)
 
         train_size = int(proportion * len(full_dataset))
         test_size = len(full_dataset) - train_size
 
         train, test = random_split(full_dataset, [train_size, test_size])
-
 
         test_loader = DataLoader(
             test,
