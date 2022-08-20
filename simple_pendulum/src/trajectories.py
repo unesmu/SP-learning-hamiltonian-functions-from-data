@@ -2,7 +2,7 @@ import torch
 from .dynamics import *
 from torchdiffeq import odeint as odeint
 
-# Similar to Similar to https://github.com/Physics-aware-AI/Symplectic-ODENet/blob/master/experiment-single-force/data.py
+# Similar to https://github.com/Physics-aware-AI/Symplectic-ODENet/blob/master/experiment-single-force/data.py
 
 def chirp_fun(t,T=1.5,f0=1,f1=50, scale =1):
     # https://en.wikipedia.org/wiki/Chirp
@@ -24,13 +24,26 @@ def sine_fun(t, scale=0.5, f=1):
     return (scale*torch.sin(2*torch.pi*t*f))
 
 class U_FUNC():
+
+    """
+    
+    example init:
+    utype = None
+    u_func = U_FUNC(utype=utype)
+    u_func.params['T'] = 2.0
+    u_func.params['f0'] = 0
+    u_func.params['f1'] = 1
+    u_func.params['scale'] = 1
+
+    """
+    
     def __init__(self, utype=None, params={}):
         super(U_FUNC).__init__()
         self.utype = utype
         self.params = params # dict containing params for the input function
-        self.params['T'] = 1.5
-        self.params['f0'] = 1
-        self.params['f1'] = 10
+        self.params['T'] = 2.0
+        self.params['f0'] = 0
+        self.params['f1'] = 1
         self.params['scale'] = 1
 
     def forward(self, t):  
