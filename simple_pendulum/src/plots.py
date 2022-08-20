@@ -72,8 +72,7 @@ coord_type = 'hamiltonian', title = 'Trajectory of the generalized coordinates',
     plt.show()
     return
 
-
-def train_test_loss_plot(loss_train,loss_test, epochs, file_path=None,
+def train_test_loss_plot(loss_train,loss_test, epochs, test_epochs, file_path=None,
                             horizons = [100,150,200,250,300],
                             horizon_steps = [200,400,550,700,850],
                             title='train and test loss per epoch' ):
@@ -92,7 +91,7 @@ def train_test_loss_plot(loss_train,loss_test, epochs, file_path=None,
     plt.plot(epochs, loss_train, label='train')
 
     if not loss_test == []: # if loss_test exists
-        plt.plot(epochs[::10], loss_test, label='test')
+        plt.plot(test_epochs, loss_test, label='test')
 
     plt.xlabel('epoch')
     plt.ylabel('loss')
