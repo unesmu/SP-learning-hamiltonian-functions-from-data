@@ -70,7 +70,7 @@ class Training:
         self.gtype = gtype
         self.shuffle = shuffle
         self.coord_type = coord_type
-        
+
         self.u_func = U_FUNC(utype=utype)
         self.g_func = G_FUNC(device, gtype=gtype)
 
@@ -79,18 +79,22 @@ class Training:
             self.epoch_num = sum(switch_steps)
         print('Number of training epochs: ', self.epoch_num)
 
+        print('Generating dataset')
+        self._init_data_loaders()
+        print('Dataset created')
+        self.model_path, self.plot_path = create_paths(PATH,
+                                                       save_suffix,
+                                                       model_name)
+        print('Paths created')
+        self._init_model()
+        print('Model initiatialized. \n Number of parameters :', count_parameters(self.model))
+
+    def _init_data_loaders(self):
         self.train_loader, self.test_loader = load_data_device(self.time_steps, self.num_trajectories,
                                                                self.device, self.batch_size, self.proportion,
                                                                self.shuffle, self.Ts, self.y0, self.noise_std,
                                                                self.C, self.m, self.g, self.l, self.u_func,
                                                                self.g_func, self.coord_type)
-
-        print('Dataset created')
-        self.model_path, self.stats_path, self.plot_path, self.train_loader_path, self.test_loader_path = create_paths(PATH,
-                                                                                                                       save_suffix,
-                                                                                                                       model_name)
-        print('Paths created')
-        self._init_model()
 
     def _init_model(self):
         if self.model_name == 'Input_HNN_chirp':
@@ -107,9 +111,9 @@ class Training:
             self.model = Simple_HNN(
                 H_net=H_net, device=self.device, dissip=False)
 
+
         self.model.to(self.device)
 
-        count_parameters(self.model)
 
     def _output_training_stats(self, step, train_loss, test_loss, train_time, test_time):
         """
@@ -129,7 +133,6 @@ class Training:
         """
         basic training step of the model
         """
-        
 
         # x is [batch_size,(q1,p1,q2,p1),time_steps]
         t_eval = t_eval[0, :self.horizon]
@@ -201,6 +204,8 @@ class Training:
 
             for x, t_eval in iter(self.train_loader):
                 train_loss = self._train_step(train_loss, x, t_eval)
+            
+            logs['train_loss'].append(train_loss)
 
             t2 = time.time()
             train_time = t2-t1
@@ -212,15 +217,19 @@ class Training:
                     if step % self.test_every == 0:  # run validation every 10 steps
                         for x, t_eval in iter(self.test_loader):
                             test_loss = self._test_step(test_loss, x, t_eval)
+                        
+                        logs['test_loss'].append(test_loss)
 
             test_time = time.time()-t2
 
             self._output_training_stats(
                 step, train_loss, test_loss, train_time, test_time)
 
-            # logging
-            logs['train_loss'].append(train_loss)
-            logs['test_loss'].append(test_loss)
+            
+            
+            
 
         logs['test_epochs'] = self.test_epochs
-        return logs 
+
+        self.logs = logs
+        return logs

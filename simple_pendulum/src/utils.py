@@ -1,9 +1,8 @@
 import numpy as np
 import random
-
 import torch
-
 import json
+import dill as pickle
 
 def count_parameters(model):
     '''
@@ -41,3 +40,13 @@ def read_dict(stats_path):
         data = f.read()
     data = json.loads(data)
     return data
+
+def pickle_save(file, path):
+    with open(path, 'wb') as handle:
+        pickle.dump(file, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+
+def pickle_load(path):
+    with open(path, 'rb') as handle:
+        file = pickle.load(handle)
+    return file

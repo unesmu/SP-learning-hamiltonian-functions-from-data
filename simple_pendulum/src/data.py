@@ -41,7 +41,7 @@ def data_loader(q, p, t_eval, batch_size, device, shuffle = True, proportion = 0
             shuffle
             )    
     else:
-      train = TrajectoryDataset(q, p, t_eval)
+      train = TrajectoryDataset(device, q, p, t_eval)
       # if proportion is set to None don't split the dataset
       q_train = q
       p_train = p
@@ -56,5 +56,5 @@ def data_loader(q, p, t_eval, batch_size, device, shuffle = True, proportion = 0
         batch_size,
         shuffle
         )
-       
+    
     return train_loader, test_loader

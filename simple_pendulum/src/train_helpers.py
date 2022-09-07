@@ -17,18 +17,18 @@ def simple_pendulum_parameters():
 # set all paths and create folders : 
 def create_paths(PATH, save_suffix, model_name):
     model_path = PATH+'data/'+save_suffix+model_name+'/'
-    stats_path = PATH+'data/'+save_suffix+model_name+'/'
+    # stats_path = PATH+'data/'+save_suffix+model_name+'/'
     plot_path = PATH+'data/'+save_suffix+model_name+'/img/'
-    train_loader_path = PATH + 'data/'+save_suffix+model_name+'/datasets/' 
-    test_loader_path = PATH + 'data/'+save_suffix+model_name+'/datasets/' 
+    # train_loader_path = PATH + 'data/'+save_suffix+model_name+'/datasets/' 
+    # test_loader_path = PATH + 'data/'+save_suffix+model_name+'/datasets/' 
 
     os.makedirs(model_path, exist_ok=True)
-    os.makedirs(stats_path, exist_ok=True)
+    # os.makedirs(stats_path, exist_ok=True)
     os.makedirs(plot_path, exist_ok=True)
-    os.makedirs(train_loader_path, exist_ok=True)
-    os.makedirs(test_loader_path, exist_ok=True)
+    # os.makedirs(train_loader_path, exist_ok=True)
+    # os.makedirs(test_loader_path, exist_ok=True)
     
-    return model_path, stats_path, plot_path, train_loader_path, test_loader_path
+    return model_path, plot_path #, train_loader_path, test_loader_path # stats_path,
 
 def L2_loss(u, v, w = False, dim = (0,1), param = 'L2'):
     # u nominal
