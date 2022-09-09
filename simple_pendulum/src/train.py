@@ -15,36 +15,37 @@ from .utils import *
 
 
 class Training:
-    ''' 
+    """
     Training class
-    '''
+    """
 
-    def __init__(self,
-                 PATH,
-                 device,
-                 w=[1.0, 1.0],
-                 resnet_config=False,
-                 horizon=False,
-                 horizon_type=False,
-                 horizon_list=[50, 100, 150, 200, 250, 300],
-                 switch_steps=[200, 200, 200, 150, 150, 150],
-                 epoch_num=None,
-                 loss_type='L2weighted',
-                 test_every=10,
-                 print_every=10,
-                 lr=1e-3,
-                 weight_decay=1e-4,
-                 model_name='Input_HNN_chirp',
-                 time_steps=200,
-                 num_trajectories=125,
-                 batch_size=100,
-                 proportion=0.8,
-                 utype=None,
-                 gtype=None,
-                 shuffle=False,
-                 coord_type='hamiltonian',
-                 save_suffix='',
-                 ):
+    def __init__(
+        self,
+        PATH,
+        device,
+        w=[1.0, 1.0],
+        resnet_config=False,
+        horizon=False,
+        horizon_type=False,
+        horizon_list=[50, 100, 150, 200, 250, 300],
+        switch_steps=[200, 200, 200, 150, 150, 150],
+        epoch_num=None,
+        loss_type="L2weighted",
+        test_every=10,
+        print_every=10,
+        lr=1e-3,
+        weight_decay=1e-4,
+        model_name="Input_HNN_chirp",
+        time_steps=200,
+        num_trajectories=125,
+        batch_size=100,
+        proportion=0.8,
+        utype=None,
+        gtype=None,
+        shuffle=False,
+        coord_type="hamiltonian",
+        save_suffix="",
+    ):
 
         self.device = device
         self.w = w
@@ -77,57 +78,176 @@ class Training:
         self.w = torch.tensor(w, device=self.device)
         if epoch_num is None:
             self.epoch_num = sum(switch_steps)
-        print('Number of training epochs: ', self.epoch_num)
+        print("Number of training epochs: ", self.epoch_num)
 
-        print('Generating dataset')
+        print("Generating dataset")
         self._init_data_loaders()
-        print('Dataset created')
-        self.model_path, self.plot_path = create_paths(PATH,
-                                                       save_suffix,
-                                                       model_name)
-        print('Paths created')
+        print("Dataset created")
+        self.model_path, self.plot_path = create_paths(PATH, save_suffix, model_name)
+        print("Paths created")
         self._init_model()
-        print('Model initiatialized. \n Number of parameters :', count_parameters(self.model))
+        
 
     def _init_data_loaders(self):
-        self.train_loader, self.test_loader = load_data_device(self.time_steps, self.num_trajectories,
-                                                               self.device, self.batch_size, self.proportion,
-                                                               self.shuffle, self.Ts, self.y0, self.noise_std,
-                                                               self.C, self.m, self.g, self.l, self.u_func,
-                                                               self.g_func, self.coord_type)
+        self.train_loader, self.test_loader = load_data_device(
+            self.time_steps,
+            self.num_trajectories,
+            self.device,
+            self.batch_size,
+            self.proportion,
+            self.shuffle,
+            self.Ts,
+            self.y0,
+            self.noise_std,
+            self.C,
+            self.m,
+            self.g,
+            self.l,
+            self.u_func,
+            self.g_func,
+            self.coord_type,
+        )
 
     def _init_model(self):
-        if self.model_name == 'Input_HNN_chirp':
 
-            H_net = MLP(input_dim=2, hidden_dim=60, nb_hidden_layers=2,
-                        output_dim=1, activation='x+sin(x)^2')
-            self.model = Input_HNN(
-                u_func=self.u_func, G_net=self.g_func, H_net=H_net, device=self.device)
+        if self.model_name == "Input_HNN_chirp" or self.model_name == "Input_HNN_chirp_nohorizon":
 
-        elif self.model_name == 'Simple_HNN_':
+            H_net = MLP(input_dim=2, hidden_dim=60, nb_hidden_layers=2, output_dim=1, activation="x+sin(x)^2")
+            self.model = Input_HNN(u_func=self.u_func, G_net=self.g_func, H_net=H_net, device=self.device)
 
-            H_net = MLP(input_dim=2, hidden_dim=60, nb_hidden_layers=2,
-                        output_dim=1, activation='x+sin(x)^2')
-            self.model = Simple_HNN(
-                H_net=H_net, device=self.device, dissip=False)
+        elif self.model_name == "Simple_HNN_":
 
+            H_net = MLP(input_dim=2, hidden_dim=60, nb_hidden_layers=2, output_dim=1, activation="x+sin(x)^2")
+            self.model = Simple_HNN(H_net=H_net, device=self.device, dissip=False)
 
+        elif self.model_name == "Input_HNN_chirp_GNN": 
+            H_net = MLP(input_dim=2, hidden_dim=60, nb_hidden_layers=2, output_dim=1, activation="x+sin(x)^2")
+            G_net = MLP(input_dim=2, hidden_dim=30, nb_hidden_layers=1, output_dim=2, activation="tanh")
+            self.model = Input_HNN(u_func=self.u_func, G_net=G_net, H_net=H_net, device=self.device)
+        
+        elif self.model_name == "Expanding_HNN_chirp":
+
+            H_net = Expanding_HNN(
+                resblock_list=[0],
+                num_blocks=6,
+                input_dim=2,
+                hidden_dim=22,
+                nb_hidden_layers=2,
+                output_dim=1,
+                activation_res="x+sin(x)^2",
+                activation_mlp="x+sin(x)^2",
+            )
+            num_params = 0
+            for block in H_net.resblocks:
+                block.to(self.device)
+                num_params += count_parameters(block)
+
+            self.model = Input_HNN(u_func=self.u_func, G_net=self.g_func, H_net=H_net, device=self.device)
+            self.model.to(self.device)
+            num_params1 = count_parameters(self.model)
+            num_params2 = count_parameters(self.model.H_net.resblocks[0])
+            num_params += num_params1
+            print("mlp number of parameters :", num_params1)
+            print("resblock number of parameters :", num_params2)
+            print("Total number of H_net parameters :", num_params)
+
+        elif self.model_name == "Expanding_wide_HNN_chirp": 
+
+            H_net = Expanding_wide_HNN(
+                resblock_list=[0],
+                num_blocks=6,
+                input_dim=2,
+                hidden_dim=22,
+                nb_hidden_layers=2,
+                output_dim=1,
+                activation_res="x+sin(x)^2",
+                activation_mlp="x+sin(x)^2",
+            )
+            num_params = 0
+            for block in H_net.resblocks:
+                block.to(self.sdevice)
+                num_params += count_parameters(block)
+
+            self.model = Input_HNN(u_func=self.u_func, G_net=self.g_func, H_net=H_net, device=self.device)
+            self.model.to(self.device)
+            num_params1 = count_parameters(self.model)
+            num_params2 = count_parameters(self.model.H_net.resblocks[0])
+            num_params += num_params1
+            print("mlp number of parameters :", num_params1)
+            print("resblock number of parameters :", num_params2)
+            print("Total number of H_net parameters :", num_params)
+
+        elif self.model_name == "Interp_HNN_chirp":
+
+            H_net = Interp_HNN(
+                resblock_list=[0, 16],
+                num_blocks=17,
+                input_dim=2,
+                hidden_dim=18,
+                nb_hidden_layers=1,
+                output_dim=1,
+                activation_res="x+sin(x)^2",
+                activation_mlp="x+sin(x)^2",
+            )
+            num_params = 0
+            for block in H_net.resblocks:
+                block.to(self.device)
+                num_params += count_parameters(block)
+
+            self.model = Input_HNN(u_func=self.u_func, G_net=self.g_func, H_net=H_net, device=self.device)
+            self.model.to(self.device)
+            num_params1 = count_parameters(self.model)
+            num_params2 = count_parameters(self.model.H_net.resblocks[0])
+            num_params += num_params1
+            print("mlp number of parameters :", num_params1)
+            print("resblock number of parameters :", num_params2)
+            print("Total number of H_net parameters :", num_params)
+
+        elif self.model_name == "Interp_horizon_HNN_chirp":
+
+            H_net = Interp_HNN(
+                resblock_list=[0, 16],
+                num_blocks=17,
+                input_dim=2,
+                hidden_dim=18,
+                nb_hidden_layers=1,
+                output_dim=1,
+                activation_res="x+sin(x)^2",
+                activation_mlp="x+sin(x)^2",
+            )
+
+            num_params = 0
+            for block in H_net.resblocks:
+                block.to(self.device)
+                num_params += count_parameters(block)
+
+            self.model = Input_HNN(u_func=self.u_func, G_net=self.g_func, H_net=H_net, device=self.device)
+            self.model.to(self.device)
+            num_params1 = count_parameters(self.model)
+            num_params2 = count_parameters(self.model.H_net.resblocks[0])
+            num_params += num_params1
+            print("mlp number of parameters :", num_params1)
+            print("resblock number of parameters :", num_params2)
+            print("Total number of H_net parameters :", num_params)
+
+        print("Model initiatialized. \n Number of parameters :", count_parameters(self.model))
+            
         self.model.to(self.device)
-
 
     def _output_training_stats(self, step, train_loss, test_loss, train_time, test_time):
         """
         Output and save training stats every epoch or multiple of epochs
         """
 
-        if step % self.print_every == 0 or step == self.epoch_num-1:
+        if step % self.print_every == 0 or step == self.epoch_num - 1:
             if step % self.test_every == 0:
-                print('[%3d/%3d]\t train loss: %4e, t_train: %2.2f, test loss: %4e, t_test: %2.2f'
-                      % (step, self.epoch_num, train_loss, train_time, test_loss, test_time))
+                print(
+                    "[%3d/%3d]\t train loss: %4e, t_train: %2.2f, test loss: %4e, t_test: %2.2f"
+                    % (step, self.epoch_num, train_loss, train_time, test_loss, test_time)
+                )
                 self.test_epochs.append(step)
             else:
-                print('[%3d/%3d]\t train loss: %4e, t_train: %2.2f'
-                      % (step, self.epoch_num, train_loss, train_time))
+                print("[%3d/%3d]\t train loss: %4e, t_train: %2.2f" % (step, self.epoch_num, train_loss, train_time))
 
     def _train_step(self, train_loss, x, t_eval):
         """
@@ -135,14 +255,14 @@ class Training:
         """
 
         # x is [batch_size,(q1,p1,q2,p1),time_steps]
-        t_eval = t_eval[0, :self.horizon]
+        t_eval = t_eval[0, : self.horizon]
 
-        train_x_hat = odeint(
-            self.model, x[:, 0, :], t_eval, method='rk4', options=dict(step_size=self.Ts))
+        train_x_hat = odeint(self.model, x[:, 0, :], t_eval, method="rk4", options=dict(step_size=self.Ts))
         # train_x_hat is [time_steps, batch_size, (q1,p1,q2,p1)]
 
-        train_loss_mini = L2_loss(torch.permute(
-            x[:, :self.horizon, :], (1, 0, 2)), train_x_hat[:self.horizon, :, :], self.w, param=self.loss_type)
+        train_loss_mini = L2_loss(
+            torch.permute(x[:, : self.horizon, :], (1, 0, 2)), train_x_hat[: self.horizon, :, :], self.w, param=self.loss_type
+        )
         # after permute x is [time_steps, batch_size, (q1,p1,q2,p1),]
 
         train_loss = train_loss + train_loss_mini.item()
@@ -159,13 +279,13 @@ class Training:
         """
 
         # run test data
-        t_eval = t_eval[0, :self.horizon]
+        t_eval = t_eval[0, : self.horizon]
 
-        test_x_hat = odeint(
-            self.model, x[:, 0, :], t_eval, method='rk4', options=dict(step_size=self.Ts))
-        #test_loss_mini = L2_loss(torch.permute(x[:, :, :horizon], (2,0,1)) , test_x_hat[:horizon,:,:],w)
-        test_loss_mini = L2_loss(torch.permute(
-            x[:, :self.horizon, :], (1, 0, 2)), test_x_hat[:self.horizon, :, :], self.w, param=self.loss_type)
+        test_x_hat = odeint(self.model, x[:, 0, :], t_eval, method="rk4", options=dict(step_size=self.Ts))
+        # test_loss_mini = L2_loss(torch.permute(x[:, :, :horizon], (2,0,1)) , test_x_hat[:horizon,:,:],w)
+        test_loss_mini = L2_loss(
+            torch.permute(x[:, : self.horizon, :], (1, 0, 2)), test_x_hat[: self.horizon, :, :], self.w, param=self.loss_type
+        )
 
         test_loss = test_loss + test_loss_mini.item()
 
@@ -177,10 +297,9 @@ class Training:
         training procedure
         """
 
-        self.optim = torch.optim.AdamW(self.model.parameters(), self.lr,
-                                       weight_decay=self.weight_decay)  # Adam
+        self.optim = torch.optim.AdamW(self.model.parameters(), self.lr, weight_decay=self.weight_decay)  # Adam
 
-        logs = {'train_loss': [], 'test_loss': []}
+        logs = {"train_loss": [], "test_loss": []}
 
         self.test_epochs = []
 
@@ -191,24 +310,22 @@ class Training:
 
             t1 = time.time()
 
-            if self.horizon_type == 'auto':
-                self.horizon = select_horizon_list(
-                    step, self.horizon_list, self.switch_steps)
+            if self.horizon_type == "auto":
+                self.horizon = select_horizon_list(step, self.horizon_list, self.switch_steps)
 
             # increase the model size and initialise the new parameters
             if self.resnet_config:
-                self.model = multilevel_strategy_update(
-                    self.device, step, self.model, self.resnet_config, self.switch_steps)
+                self.model = multilevel_strategy_update(self.device, step, self.model, self.resnet_config, self.switch_steps)
 
             self.model.train()
 
             for x, t_eval in iter(self.train_loader):
                 train_loss = self._train_step(train_loss, x, t_eval)
-            
-            logs['train_loss'].append(train_loss)
+
+            logs["train_loss"].append(train_loss)
 
             t2 = time.time()
-            train_time = t2-t1
+            train_time = t2 - t1
 
             self.model.eval()
 
@@ -217,19 +334,14 @@ class Training:
                     if step % self.test_every == 0:  # run validation every 10 steps
                         for x, t_eval in iter(self.test_loader):
                             test_loss = self._test_step(test_loss, x, t_eval)
-                        
-                        logs['test_loss'].append(test_loss)
 
-            test_time = time.time()-t2
+                        logs["test_loss"].append(test_loss)
 
-            self._output_training_stats(
-                step, train_loss, test_loss, train_time, test_time)
+            test_time = time.time() - t2
 
-            
-            
-            
+            self._output_training_stats(step, train_loss, test_loss, train_time, test_time)
 
-        logs['test_epochs'] = self.test_epochs
+        logs["test_epochs"] = self.test_epochs
 
         self.logs = logs
         return logs
