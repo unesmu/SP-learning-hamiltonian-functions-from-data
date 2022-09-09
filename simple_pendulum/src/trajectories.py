@@ -6,18 +6,28 @@ from torchdiffeq import odeint as odeint
 
 
 def chirp_fun(t, T=1.5, f0=1, f1=50, scale=1):
-    # https://en.wikipedia.org/wiki/Chirp
+    """
+    chirp function implemented using the formula from
+    https://en.wikipedia.org/wiki/Chirp
+    """
+
     c = (f1 - f0) / T
     return torch.sin(2 * torch.pi * (c * t**2 / 2 + f0 * t)) * scale
 
 
 def multi_sine(t, scale=0.5):
+    """
+    Multi-sine function, implemented as the sum of multiple sine functions
+    """
     f = torch.tensor([2, 10, 3, 4], device=t.device).unsqueeze(dim=1)
     A = torch.tensor([2, 0.5, 0.3, 0.8], device=t.device).unsqueeze(dim=1)
     return (A * torch.sin(2 * torch.pi * t * f)).sum(dim=0) * scale
 
 
 def step_fun(t, t1=0.05, scale=0.1):
+    """
+    Simple step function
+    """
     f = torch.zeros_like(t)
     f[t < t1] = 0
     f[~(t < t1)] = scale
@@ -32,7 +42,6 @@ class U_FUNC:
 
     """
         Class that contains the input functions
-    s
         Example use :
             utype = 'chirp's
             u_func = U_FUNC(utype=utype)
@@ -149,7 +158,7 @@ def energy_pendulum(theta_dot, theta, m, g, l):
 
 def get_energy_pendulum(t_eval, u_func, g_func, q, p, C, m, g, l):
     """
-    Returns the energy at each time step given the
+    Returns the energy at each time step given the time vector t_eval
     """
     energy = []
     derivatives = []
@@ -173,7 +182,9 @@ def get_energy_pendulum(t_eval, u_func, g_func, q, p, C, m, g, l):
 def multiple_trajectories(
     time_steps, num_trajectories, device, Ts, y0, noise_std, C, m, g, l, u_func, g_func, coord_type="hamiltonian"
 ):
-    """ """
+    """
+    Generates the trajectories (all generalized coordinates and energy)
+    """
 
     # the first trajectory
     q, p, t_eval = get_trajectory_pend(device, time_steps, Ts, y0, noise_std, C, m, g, l, u_func, g_func)

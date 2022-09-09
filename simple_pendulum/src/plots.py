@@ -159,8 +159,8 @@ def plot_results(
 
     energy_nom, _ = get_energy_pendulum(
         t_eval,
-        model_training.u_func,
-        model_training.g_func,
+        model_training.model.u_func,
+        model_training.model.G_net,
         x[n, :, 0],
         x[n, :, 1],
         model_training.C,
@@ -170,8 +170,8 @@ def plot_results(
     )
     energy_pred, _ = get_energy_pendulum(
         t_eval,
-        model_training.u_func,
-        model_training.g_func,
+        model_training.model.u_func,
+        model_training.model.G_net,
         test_x_hat[:, 0, 0],
         test_x_hat[:, 0, 1],
         model_training.C,
@@ -179,7 +179,7 @@ def plot_results(
         model_training.g,
         model_training.l,
     )
-    input = model_training.u_func.forward(t_eval).cpu().detach()
+    input = model_training.model.u_func.forward(t_eval).cpu().detach()
     t_eval = t_eval.cpu().detach()
 
     fig, (ax1, ax2, ax3, ax4) = plt.subplots(1, 4, figsize=(12, 4), constrained_layout=True)

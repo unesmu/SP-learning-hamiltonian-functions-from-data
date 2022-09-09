@@ -80,15 +80,15 @@ class Training:
             self.epoch_num = sum(switch_steps)
         print("Number of training epochs: ", self.epoch_num)
 
-        print("Generating dataset")
-        self._init_data_loaders()
-        print("Dataset created")
+
+        
         self.model_path, self.plot_path = create_paths(PATH, save_suffix, model_name)
         print("Paths created")
         self._init_model()
         
 
     def _init_data_loaders(self):
+        print("Generating dataset")
         self.train_loader, self.test_loader = load_data_device(
             self.time_steps,
             self.num_trajectories,
@@ -103,22 +103,18 @@ class Training:
             self.m,
             self.g,
             self.l,
-            self.u_func,
-            self.g_func,
+            self.model.u_func,
+            self.model.G_net,
             self.coord_type,
         )
+        print("Dataset created")
 
     def _init_model(self):
-
-        if self.model_name == "Input_HNN_chirp" or self.model_name == "Input_HNN_chirp_nohorizon":
+        
+        if self.model_name == "Input_HNN_chirp" or self.model_name == "Input_HNN_chirp_nohorizon" or self.model_name == "Simple_HNN_":
 
             H_net = MLP(input_dim=2, hidden_dim=60, nb_hidden_layers=2, output_dim=1, activation="x+sin(x)^2")
             self.model = Input_HNN(u_func=self.u_func, G_net=self.g_func, H_net=H_net, device=self.device)
-
-        elif self.model_name == "Simple_HNN_":
-
-            H_net = MLP(input_dim=2, hidden_dim=60, nb_hidden_layers=2, output_dim=1, activation="x+sin(x)^2")
-            self.model = Simple_HNN(H_net=H_net, device=self.device, dissip=False)
 
         elif self.model_name == "Input_HNN_chirp_GNN": 
             H_net = MLP(input_dim=2, hidden_dim=60, nb_hidden_layers=2, output_dim=1, activation="x+sin(x)^2")
@@ -230,7 +226,7 @@ class Training:
             print("resblock number of parameters :", num_params2)
             print("Total number of H_net parameters :", num_params)
 
-        print("Model initiatialized. \n Number of parameters :", count_parameters(self.model))
+        print("Model initiatialized \nNumber of parameters:", count_parameters(self.model))
             
         self.model.to(self.device)
 
