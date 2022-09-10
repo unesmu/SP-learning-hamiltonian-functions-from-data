@@ -72,6 +72,102 @@ def train_only_ae(autoencoder,
 
     return stats
 
+def ae_train_step(train_loss, step, autoencoder, model, optim, horizon,
+                    alpha,
+                    beta,
+                    gamma, Ts, w, x, t_eval):
+
+    t_eval = t_eval[0, :horizon]
+
+
+    # x_hat is the reconstructed nominal trajectory ; q_dot_hat = decoder(encoder(nominaltrajectory))
+    # z is nominal trajectory in latent space (encoded nominal trajectory)
+    z, x_hat = autoencoder(x[:, :horizon, :])
+    # z is [batch_size,time_steps,(q1,p1,q2,p1)]
+
+    # model output in latent space
+    train_z_hat = odeint(
+        model, z[:, 0, :], t_eval, method='rk4', options=dict(step_size=Ts))
+    # train_z_hat is [time_steps, batch_size, (q1,p1,q2,p1)]
+
+    # decoded output trajectory
+    train_x_hat = autoencoder.decoder(train_z_hat[:, :, :])
+    # train_x_hat = [time_steps, batch_size, (q1_HNN_decoded, p1_HNN_decoded, q2_HNN_decoded, p1_HNN_decoded)]
+
+    # loss between HNN output and encoded nominal trajectory (nominal trajectory in latent space)
+    loss_HNN_batch = L2_loss(z[:, :, :].permute(
+        (1, 0, 2)), train_x_hat[:, :, :], w)  # [:,:horizon])
+
+    # loss between decoded HNN output and nominal trajectory
+    loss_prediction_batch = L2_loss(
+        x[:, :horizon, :],  train_x_hat[:, :, :].permute((1, 0, 2)), w)
+
+    # loss between nominal trajectory and decoded(encoded(nominaltrajectory))
+    # to make sure the autoencoder properly reconstructs the nominal trajectory
+    loss_AE_batch = L2_loss(
+        x[:, :horizon, :], x_hat[:, :horizon, :], w)
+
+    # train_loss_batch = L2_loss(torch.permute(z[:, :, :horizon], (2,0,1)) , train_z_hat[:horizon,:,:],w)#[:,:horizon])
+    train_loss_batch = alpha*loss_HNN_batch + beta * \
+        loss_prediction_batch + gamma*loss_AE_batch
+
+    if not step % 10:
+        n = 0
+        print_ae_train_all(t_eval, train_x_hat, x_hat, x, n, horizon)
+
+    train_loss = train_loss + train_loss_batch.item()
+    train_loss_batch.backward()
+    optim.step()
+    optim.zero_grad(set_to_none=True)
+
+    return train_loss
+
+def ae_test_step(test_loss, step, autoencoder, model, optim, horizon,
+                    alpha,
+                    beta,
+                    gamma, Ts, w, x, t_eval):
+    with torch.no_grad():
+        t_eval = t_eval[0, :horizon]
+
+        # x_hat is the reconstructed nominal trajectory ; q_dot_hat = decoder(encoder(nominaltrajectory))
+        # z is nominal trajectory in latent space (encoded nominal trajectory)
+        z, x_hat = autoencoder(x[:, :horizon, :])
+        # z is [batch_size,time_steps,(q1,p1,q2,p1)]
+
+        # model output in latent space
+        test_z_hat = odeint(
+            model, z[:, 0, :], t_eval, method='rk4', options=dict(step_size=Ts))
+        # test_z_hat is [time_steps, batch_size, (q1,p1,q2,p1)]
+
+        # decoded output trajectory
+        test_x_hat = autoencoder.decoder(test_z_hat[:, :, :])
+        # test_x_hat = [time_steps, batch_size, (q1_HNN_decoded, p1_HNN_decoded, q2_HNN_decoded, p1_HNN_decoded)]
+
+        # loss between HNN output and encoded nominal trajectory (nominal trajectory in latent space)
+        loss_HNN_batch = L2_loss(z[:, :, :].permute(
+            (1, 0, 2)), test_x_hat[:, :, :], w)  # [:,:horizon])
+
+        # loss between decoded HNN output and nominal trajectory
+        loss_prediction_batch = L2_loss(
+            x[:, :horizon, :],  test_x_hat[:, :, :].permute((1, 0, 2)), w)
+
+        # loss between nominal trajectory and decoded(encoded(nominaltrajectory))
+        # to make sure the autoencoder properly reconstructs the nominal trajectory
+        loss_AE_batch = L2_loss(
+            x[:, :horizon, :], x_hat[:, :horizon, :], w)
+
+        # test_loss_batch = L2_loss(torch.permute(z[:, :, :horizon], (2,0,1)) , test_z_hat[:horizon,:,:],w)#[:,:horizon])
+        test_loss_batch = alpha*loss_HNN_batch + beta * \
+            loss_prediction_batch + gamma*loss_AE_batch
+
+        if not step % 10:
+            n = 0
+            print('test:')
+            print_ae_train_all(t_eval, test_x_hat, x_hat, x, n, horizon)
+
+        test_loss = test_loss + test_loss_batch.item()
+
+    return test_loss
 
 def train_ae(model,
              device,
@@ -94,7 +190,6 @@ def train_ae(model,
     Outpus:
 
     '''
-    # TODO : make a function for one epoch
 
     alpha = 1.0
     beta = 1.0
@@ -120,94 +215,37 @@ def train_ae(model,
 
         # x is [batch_size,time_steps,(q1,p1,q2,p1)]
         for x, t_eval in iter(train_loader):
+            train_loss = ae_train_step(train_loss, step, autoencoder, model, optim, horizon,
+                                        alpha,
+                                        beta,
+                                        gamma, Ts, w, x, t_eval)
 
-            t_eval = t_eval[0, :horizon]
-
-
-            # x_hat is the reconstructed nominal trajectory ; q_dot_hat = decoder(encoder(nominaltrajectory))
-            # z is nominal trajectory in latent space (encoded nominal trajectory)
-            z, x_hat = autoencoder(x[:, :horizon, :])
-            # z is [batch_size,time_steps,(q1,p1,q2,p1)]
-
-            # model output in latent space
-            train_z_hat = odeint(
-                model, z[:, 0, :], t_eval, method='rk4', options=dict(step_size=Ts))
-            # train_z_hat is [time_steps, batch_size, (q1,p1,q2,p1)]
-
-            # decoded output trajectory
-            train_x_hat = autoencoder.decoder(train_z_hat[:, :, :])
-            # train_x_hat = [time_steps, batch_size, (q1_HNN_decoded, p1_HNN_decoded, q2_HNN_decoded, p1_HNN_decoded)]
-
-            # loss between HNN output and encoded nominal trajectory (nominal trajectory in latent space)
-            loss_HNN_batch = L2_loss(z[:, :, :].permute(
-                (1, 0, 2)), train_x_hat[:, :, :], w)  # [:,:horizon])
-
-            # loss between decoded HNN output and nominal trajectory
-            loss_prediction_batch = L2_loss(
-                x[:, :horizon, :],  train_x_hat[:, :, :].permute((1, 0, 2)), w)
-
-            # loss between nominal trajectory and decoded(encoded(nominaltrajectory))
-            # to make sure the autoencoder properly reconstructs the nominal trajectory
-            loss_AE_batch = L2_loss(
-                x[:, :horizon, :], x_hat[:, :horizon, :], w)
-
-            # train_loss_batch = L2_loss(torch.permute(z[:, :, :horizon], (2,0,1)) , train_z_hat[:horizon,:,:],w)#[:,:horizon])
-            train_loss_batch = alpha*loss_HNN_batch + beta * \
-                loss_prediction_batch + gamma*loss_AE_batch
-
-            if not step % 10:
-                n = 0
-                fig, ax = plt.subplots(1, 4, figsize=(
-                    15, 4), constrained_layout=True, sharex=True)
-                list_1 = [r'$q1$', r'$\dot{q1}[rad/s]$',
-                          r'$q2$', r'$\dot{q2}[rad/s]$']
-                list_2 = ['a', 'b', 'c', 'd']
-                for i in range(4):
-                    ax[i].plot(t_eval.detach().cpu(), x[n, :horizon,
-                               i].detach().cpu(), label='nominal')
-                    ax[i].plot(t_eval.detach().cpu(), x_hat[n, :,
-                               i].detach().cpu(), '--', label='autencoder')
-                    ax[i].plot(t_eval.detach().cpu(), train_x_hat[:,
-                               n, i].detach().cpu(), '--', label='HNN_decoded')
-                    ax[i].set_title(list_1[i], fontsize=10)
-                    ax[i].set_ylabel(list_1[i])
-                    ax[i].set_xlabel('time (s)')
-
-                ax[3].legend()
-                plt.suptitle(
-                    'Autoencoder output compared to nominal and predicted(HNN) trajectories (Newtonian coordinates)')
-                plt.show()
-
-            train_loss = train_loss + train_loss_batch.item()
-            train_loss_batch.backward()
-            optim.step()
-            optim.zero_grad(set_to_none=True)
 
         t2 = time.time()
         train_time = t2-t1
 
-        # if test_loader:
-        #     if not (step%10): # run validation every 10 steps
-        #         for x, t_eval in iter(test_loader):
-        #             # run test data
-        #             t_eval = t_eval[0,:horizon]
+        if test_loader:
+            if not (step%10): # run validation every 10 steps
+                for x, t_eval in iter(test_loader):
+                    test_loss = ae_test_step(test_loss, step, autoencoder, model, optim, horizon,
+                                                alpha,
+                                                beta,
+                                                gamma, Ts, w, x, t_eval)
 
-        #             test_x_hat = odeint(model, x[:, :, 0], t_eval, method='rk4')
-        #             test_loss_batch = L2_loss(torch.permute(x[:, :, :horizon], (2,0,1)) , test_x_hat[:horizon,:,:],w)
-        #             test_loss = test_loss + test_loss_batch.item()
-        #         test_time = time.time()-t2
-        #         print('epoch {:4d} | train time {:.2f} | train loss {:12e} | test loss {:8e} | test time {:.2f}  '
-        #               .format(step, train_time, train_loss, test_loss,test_time))
-        #         stats['test_loss'].append(test_loss)
-        #     else:
-        #         print('epoch {:4d} | train time {:.2f} | train loss {:12e} '
-        #               .format(step, train_time, train_loss))
-        # else:
-        #     print('epoch {:4d} | train time {:.2f} | train loss {:12e} '
-        #           .format(step, train_time, train_loss))
+                test_time = time.time()-t2
+                print('epoch {:4d} | train time {:.2f} | train loss {:12e} | test loss {:8e} | test time {:.2f}  '
+                      .format(step, train_time, train_loss, test_loss,test_time))
+                stats['test_loss'].append(test_loss)
+            else:
+                print('epoch {:4d} | train time {:.2f} | train loss {:12e} '
+                      .format(step, train_time, train_loss))
+        else:
+            print('epoch {:4d} | train time {:.2f} | train loss {:12e} '
+                  .format(step, train_time, train_loss))
 
         print('epoch {:4d} | train time {:.2f} | train loss {:12e} '
               .format(step, train_time, train_loss))
+              
         # logging
         stats['train_loss'].append(train_loss)
 

@@ -38,7 +38,30 @@ def print_ae_train(x_hat, x, n, horizon):
         'Autoencoder output compared to nominal trajectories (Newtonian coordinates)')
     plt.show()
 
+def print_ae_train_all(t_eval, train_x_hat, x_hat, x, n, horizon):
     
+    fig, ax = plt.subplots(1, 4, figsize=(
+        15, 4), constrained_layout=True, sharex=True)
+    list_1 = [r'$q1$', r'$\dot{q1}[rad/s]$',
+            r'$q2$', r'$\dot{q2}[rad/s]$']
+    list_2 = ['a', 'b', 'c', 'd']
+    for i in range(4):
+        ax[i].plot(t_eval.detach().cpu(), x[n, :horizon,
+                i].detach().cpu(), label='nominal')
+        ax[i].plot(t_eval.detach().cpu(), x_hat[n, :,
+                i].detach().cpu(), '--', label='autencoder')
+        ax[i].plot(t_eval.detach().cpu(), train_x_hat[:,
+                n, i].detach().cpu(), '--', label='HNN_decoded')
+        ax[i].set_title(list_1[i], fontsize=10)
+        ax[i].set_ylabel(list_1[i])
+        ax[i].set_xlabel('time (s)')
+
+    ax[3].legend()
+    plt.suptitle(
+        'Autoencoder output compared to nominal and predicted(HNN) trajectories (Newtonian coordinates)')
+    plt.show()
+
+
 def plot_distribution(train_loader, save=False, path=''):
 
     x,y = next(iter(train_loader))
