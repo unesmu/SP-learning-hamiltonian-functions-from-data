@@ -39,6 +39,7 @@ def select_horizon_list(
     """
     # throw error if horizon_list and switch_steps not of the same length
     assert len(horizon_list) == len(switch_steps), " horizon_list and switch_steps must have same length"
+    
     horizon_updated = 0
     if step < switch_steps[0]:
         horizon = horizon_list[0]
