@@ -20,7 +20,9 @@ class Simple_HNN(torch.nn.Module):
 
         # add a learnable dissipation coefficient
         self.dissip = dissip
-        self.C_dissip = torch.nn.Parameter(torch.tensor([0.5]))  # torch.nn.Parameter(torch.rand(1))
+        self.C_dissip = torch.nn.Parameter(
+            torch.tensor([0.5])
+        )  # torch.nn.Parameter(torch.rand(1))
         self.C_dissip.requires_grad = True
 
     def forward(self, t, x):

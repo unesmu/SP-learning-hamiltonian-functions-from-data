@@ -1,9 +1,6 @@
 import torch
 
-from torchdiffeq import odeint_adjoint as odeint_adjoint
-
-# func must be a nn.Module when using the adjoint method
-from torchdiffeq import odeint as odeint
+from torchdiffeq import odeint
 
 from .dynamics import *
 
@@ -38,7 +35,9 @@ def get_trajectory_furuta(
 
     # sampling time
 
-    t_eval = torch.linspace(1, time_steps, time_steps, device=device) * Ts  # evaluated times vector
+    t_eval = (
+        torch.linspace(1, time_steps, time_steps, device=device) * Ts
+    )  # evaluated times vector
     t_span = [Ts, time_steps * Ts]  # [t_start, t_end]
 
     # get initial state
@@ -48,7 +47,9 @@ def get_trajectory_furuta(
 
     # solve the differential equation using odeint
     q_p = odeint(
-        func=lambda t, coords: dynamics_fn_furuta(t, coords, C_q1, C_q2, g, Jr, Lr, Mp, Lp, u_func, g_func),
+        func=lambda t, coords: dynamics_fn_furuta(
+            t, coords, C_q1, C_q2, g, Jr, Lr, Mp, Lp, u_func, g_func
+        ),
         y0=y0,
         t=t_eval,
         method="rk4",
@@ -74,7 +75,12 @@ def get_trajectory_furuta(
     # .squeeze() to have a desired dimentionality
     # *torch.max(p) otherwise noise is too big compared to the generalized momentum
 
-    q1, p1, q2, p2 = q1.permute(1, 0), p1.permute(1, 0), q2.permute(1, 0), p2.permute(1, 0)
+    q1, p1, q2, p2 = (
+        q1.permute(1, 0),
+        p1.permute(1, 0),
+        q2.permute(1, 0),
+        p2.permute(1, 0),
+    )
 
     return q1, p1, q2, p2, t_eval.detach()
 
@@ -120,7 +126,9 @@ def get_init_state(n, init_method):
 """ ENERGY functions """
 
 
-def coord_derivatives_furuta_energy(t, coords, C_q1, C_q2, g, Jr, Lr, Mp, Lp, u_func, g_func):
+def coord_derivatives_furuta_energy(
+    t, coords, C_q1, C_q2, g, Jr, Lr, Mp, Lp, u_func, g_func
+):
     """
     Description:
         Returns the derivatives of the generalized coordinates
@@ -133,7 +141,9 @@ def coord_derivatives_furuta_energy(t, coords, C_q1, C_q2, g, Jr, Lr, Mp, Lp, u_
     Outputs :
       - dq1dt, dp1dt, dq2dt, dp2dt (tensors) : Derivatives w.r.t coords
     """
-    if coords.requires_grad is not True:  # coords shape: [timesteps, batchnum, (q1,p1,q2,p2)]
+    if (
+        coords.requires_grad is not True
+    ):  # coords shape: [timesteps, batchnum, (q1,p1,q2,p2)]
         coords.requires_grad = True
 
     # Hamiltonian function
@@ -156,7 +166,12 @@ def coord_derivatives_furuta_energy(t, coords, C_q1, C_q2, g, Jr, Lr, Mp, Lp, u_
     dq2dt = dHdp2 + (U_G[:, 2])
     dp2dt = -dHdq2 - C_q2 * dHdp2 + (U_G[:, 3])
 
-    dq1dt, dp1dt, dq2dt, dp2dt = dq1dt.squeeze(dim=-1), dp1dt.squeeze(dim=-1), dq2dt.squeeze(dim=-1), dp2dt.squeeze(dim=-1)
+    dq1dt, dp1dt, dq2dt, dp2dt = (
+        dq1dt.squeeze(dim=-1),
+        dp1dt.squeeze(dim=-1),
+        dq2dt.squeeze(dim=-1),
+        dp2dt.squeeze(dim=-1),
+    )
     return dq1dt, dp1dt, dq2dt, dp2dt
 
 
@@ -179,14 +194,34 @@ def energy_furuta(dq1dt, dq2dt, q1, g, Jr, Lr, Mp, Lp):
     C4 = Jp + C2
     C5 = (1 / 2) * Mp * g * Lp
 
-    E = (1 / 2) * dq2dt**2 * (C1 + C2 * torch.sin(q1) ** 2) + dq2dt * dq1dt * C3 * torch.cos(q1)
+    E = (1 / 2) * dq2dt**2 * (
+        C1 + C2 * torch.sin(q1) ** 2
+    ) + dq2dt * dq1dt * C3 * torch.cos(q1)
 
     E = E + (1 / 2) * dq1dt**2 * C4 + C5 * torch.cos(q1) + C5
 
     return E
 
 
-def get_energy_furuta(device, time_steps, Ts, u_func, g_func, q1, p1, q2, p2, C_q1, C_q2, g, Jr, Lr, Mp, Lp, time_=None):
+def get_energy_furuta(
+    device,
+    time_steps,
+    Ts,
+    u_func,
+    g_func,
+    q1,
+    p1,
+    q2,
+    p2,
+    C_q1,
+    C_q2,
+    g,
+    Jr,
+    Lr,
+    Mp,
+    Lp,
+    time_=None,
+):
     """
     Description:
 
@@ -202,7 +237,9 @@ def get_energy_furuta(device, time_steps, Ts, u_func, g_func, q1, p1, q2, p2, C_
 
     coords = torch.stack((q1, p1, q2, p2), dim=-1)
 
-    dq1dt, dp1dt, dq2dt, dp2dt = coord_derivatives_furuta_energy(time_, coords, C_q1, C_q2, g, Jr, Lr, Mp, Lp, u_func, g_func)
+    dq1dt, dp1dt, dq2dt, dp2dt = coord_derivatives_furuta_energy(
+        time_, coords, C_q1, C_q2, g, Jr, Lr, Mp, Lp, u_func, g_func
+    )
 
     energy = energy_furuta(dq1dt, dq2dt, q1, g, Jr, Lr, Mp, Lp)
 
@@ -210,7 +247,9 @@ def get_energy_furuta(device, time_steps, Ts, u_func, g_func, q1, p1, q2, p2, C_
     return energy, derivatives
 
 
-def get_energy_furuta_newtonian(time_steps, device, Ts, q1, dq1dt, q2, dq2dt, C_q1, C_q2, g, Jr, Lr, Mp, Lp):
+def get_energy_furuta_newtonian(
+    time_steps, device, Ts, q1, dq1dt, q2, dq2dt, C_q1, C_q2, g, Jr, Lr, Mp, Lp
+):
     """
     Description:
 
@@ -261,15 +300,44 @@ def multiple_trajectories_furuta(
     """
     # the first trajectory
     q1, p1, q2, p2, t_eval = get_trajectory_furuta(
-        device, init_method, num_trajectories, u_func, g_func, time_steps, y0, noise_std, Ts, C_q1, C_q2, g, Jr, Lr, Mp, Lp
-    ) 
+        device,
+        init_method,
+        num_trajectories,
+        u_func,
+        g_func,
+        time_steps,
+        y0,
+        noise_std,
+        Ts,
+        C_q1,
+        C_q2,
+        g,
+        Jr,
+        Lr,
+        Mp,
+        Lp,
+    )
     energy = []
     derivatives = []
 
     if energ_deriv:
         energy, derivatives = get_energy_furuta(
-            device, time_steps, Ts, u_func, g_func, q1, p1, q2, p2, C_q1, C_q2, g, Jr, Lr, Mp, Lp
+            device,
+            time_steps,
+            Ts,
+            u_func,
+            g_func,
+            q1,
+            p1,
+            q2,
+            p2,
+            C_q1,
+            C_q2,
+            g,
+            Jr,
+            Lr,
+            Mp,
+            Lp,
         )
 
-
-    return q1, p1, q2, p2, energy, derivatives, t_eval  
+    return q1, p1, q2, p2, energy, derivatives, t_eval

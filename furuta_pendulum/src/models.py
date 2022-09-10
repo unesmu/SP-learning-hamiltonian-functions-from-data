@@ -42,7 +42,14 @@ class MLP(torch.nn.Module):
     MLP with number of hidden layers as a parameter
     """
 
-    def __init__(self, input_dim=2, hidden_dim=90, nb_hidden_layers=4, output_dim=1, activation="x+sin(x)^2"):
+    def __init__(
+        self,
+        input_dim=2,
+        hidden_dim=90,
+        nb_hidden_layers=4,
+        output_dim=1,
+        activation="x+sin(x)^2",
+    ):
         super(MLP, self).__init__()
         self.fc1 = torch.nn.Linear(input_dim, hidden_dim)
         self.hidden_layers = torch.nn.Sequential(
@@ -190,7 +197,9 @@ class Interp_ResNet(torch.nn.Module):
 
         with torch.no_grad():
             for param1, param2, param3 in zip(
-                self.resblocks[i].parameters(), self.resblocks[j].parameters(), self.resblocks[k].parameters()
+                self.resblocks[i].parameters(),
+                self.resblocks[j].parameters(),
+                self.resblocks[k].parameters(),
             ):
                 param2.copy_((param1 + param3) / 2)
 
@@ -309,7 +318,9 @@ class simple_HNN(torch.nn.Module):
 class Autoencoder(torch.nn.Module):
     """ """
 
-    def __init__(self, nb_hidden_layers=1, hidden_dim=64, activation="tanh", config="latent"):
+    def __init__(
+        self, nb_hidden_layers=1, hidden_dim=64, activation="tanh", config="latent"
+    ):
         super(Autoencoder, self).__init__()
 
         self.config = config
@@ -349,7 +360,9 @@ class Autoencoder(torch.nn.Module):
             p_hat = self.encoder(x)  # coordinates in the latent space
 
             # input known q and encoded z into decoder
-            z = torch.stack((q1[:, :, 0], p_hat[:, :, 0], q2[:, :, 0], p_hat[:, :, 1]), dim=2)
+            z = torch.stack(
+                (q1[:, :, 0], p_hat[:, :, 0], q2[:, :, 0], p_hat[:, :, 1]), dim=2
+            )
 
             # coordinates back in the original space but using the decoder
             x_hat = self.decoder(z)
@@ -408,8 +421,16 @@ class Input_HNN(torch.nn.Module):
             dq2dt = dHdp2
             if self.dissip:
 
-                dp1dt = -dHdq1 + (G[:, 1] * u).unsqueeze(dim=1) - self.C1_dissip.pow(2) * dHdp1
-                dp2dt = -dHdq2 + (G[:, 3] * u).unsqueeze(dim=1) - self.C2_dissip.pow(2) * dHdp2
+                dp1dt = (
+                    -dHdq1
+                    + (G[:, 1] * u).unsqueeze(dim=1)
+                    - self.C1_dissip.pow(2) * dHdp1
+                )
+                dp2dt = (
+                    -dHdq2
+                    + (G[:, 3] * u).unsqueeze(dim=1)
+                    - self.C2_dissip.pow(2) * dHdp2
+                )
             else:
                 dp1dt = -dHdq1 + (G[:, 1] * u).unsqueeze(dim=1)
                 dp2dt = -dHdq2 + (G[:, 3] * u).unsqueeze(dim=1)

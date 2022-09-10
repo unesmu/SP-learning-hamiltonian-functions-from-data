@@ -41,14 +41,14 @@ def sine_fun(t, scale=0.5, f=1):
 class U_FUNC:
 
     """
-        Class that contains the input functions
-        Example use :
-            utype = 'chirp's
-            u_func = U_FUNC(utype=utype)
-            u_func.params['T'] = 2.0
-            u_func.params['f0'] = 0
-            u_func.params['f1'] = 1
-            u_func.params['scale'] = 1
+    Class that contains the input functions
+    Example use :
+        utype = 'chirp's
+        u_func = U_FUNC(utype=utype)
+        u_func.params['T'] = 2.0
+        u_func.params['f0'] = 0
+        u_func.params['f1'] = 1
+        u_func.params['scale'] = 1
 
     """
 
@@ -66,7 +66,13 @@ class U_FUNC:
         if self.utype == "tanh":
             u = (-torch.tanh((t - 0.75) * 4) + 1) / 100
         elif self.utype == "chirp":
-            u = chirp_fun(t, T=self.params["T"], f0=self.params["f0"], f1=self.params["f1"], scale=self.params["scale"])
+            u = chirp_fun(
+                t,
+                T=self.params["T"],
+                f0=self.params["f0"],
+                f1=self.params["f1"],
+                scale=self.params["scale"],
+            )
         elif self.utype == "multisine":
             u = multi_sine(t, scale=self.params["scale"])
         elif self.utype == "step":
@@ -98,19 +104,25 @@ class G_FUNC:
                 dimension = 0
             else:
                 dimension = 1
-            g = torch.stack((torch.zeros(q.shape[0]), torch.ones(q.shape[0])), dim=dimension)
+            g = torch.stack(
+                (torch.zeros(q.shape[0]), torch.ones(q.shape[0])), dim=dimension
+            )
 
         elif self.gtype is None:
             if len(q.shape) == 1:
                 dimension = 0
             else:
                 dimension = 1
-            g = torch.stack((torch.zeros(q.shape[0]), torch.zeros(q.shape[0])), dim=dimension)
+            g = torch.stack(
+                (torch.zeros(q.shape[0]), torch.zeros(q.shape[0])), dim=dimension
+            )
         g.requires_grad = False
         return g
 
 
-def get_trajectory_pend(device, time_steps, Ts, y0, noise_std, C, m, g, l, u_func, g_func):
+def get_trajectory_pend(
+    device, time_steps, Ts, y0, noise_std, C, m, g, l, u_func, g_func
+):
     """
     Similar to SymODEN repository
     """
@@ -166,7 +178,9 @@ def get_energy_pendulum(t_eval, u_func, g_func, q, p, C, m, g, l):
     coords = torch.stack((q, p), dim=1)
     for i in range(len(t_eval)):
 
-        dqdt, dpdt = coord_derivative_pend(t_eval[i], coords[i, :], C, m, g, l, u_func, g_func)
+        dqdt, dpdt = coord_derivative_pend(
+            t_eval[i], coords[i, :], C, m, g, l, u_func, g_func
+        )
 
         theta_dot = dqdt
         theta = coords[i, 0]
@@ -180,14 +194,28 @@ def get_energy_pendulum(t_eval, u_func, g_func, q, p, C, m, g, l):
 
 
 def multiple_trajectories(
-    time_steps, num_trajectories, device, Ts, y0, noise_std, C, m, g, l, u_func, g_func, coord_type="hamiltonian"
+    time_steps,
+    num_trajectories,
+    device,
+    Ts,
+    y0,
+    noise_std,
+    C,
+    m,
+    g,
+    l,
+    u_func,
+    g_func,
+    coord_type="hamiltonian",
 ):
     """
     Generates the trajectories (all generalized coordinates and energy)
     """
 
     # the first trajectory
-    q, p, t_eval = get_trajectory_pend(device, time_steps, Ts, y0, noise_std, C, m, g, l, u_func, g_func)
+    q, p, t_eval = get_trajectory_pend(
+        device, time_steps, Ts, y0, noise_std, C, m, g, l, u_func, g_func
+    )
     energy, derivatives = get_energy_pendulum(t_eval, u_func, g_func, q, p, C, m, g, l)
     energy = energy.squeeze()
     q = q.squeeze()
@@ -200,8 +228,12 @@ def multiple_trajectories(
 
     for _ in range(num_trajectories - 1):
         # the trajectories 2 to num_trajectories
-        q_n, p_n, _ = get_trajectory_pend(device, time_steps, Ts, y0, noise_std, C, m, g, l, u_func, g_func)
-        energy_n, derivatives_n = get_energy_pendulum(t_eval, u_func, g_func, q_n, p_n, C, m, g, l)
+        q_n, p_n, _ = get_trajectory_pend(
+            device, time_steps, Ts, y0, noise_std, C, m, g, l, u_func, g_func
+        )
+        energy_n, derivatives_n = get_energy_pendulum(
+            t_eval, u_func, g_func, q_n, p_n, C, m, g, l
+        )
 
         energy = torch.vstack((energy, energy_n.squeeze()))
         q = torch.vstack((q, q_n.squeeze()))

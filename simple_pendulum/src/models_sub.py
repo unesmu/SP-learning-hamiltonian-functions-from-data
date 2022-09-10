@@ -45,7 +45,14 @@ class MLP(torch.nn.Module):
     MLP with number of hidden layers as a parameter
     """
 
-    def __init__(self, input_dim=2, hidden_dim=90, nb_hidden_layers=4, output_dim=1, activation="x+sin(x)^2"):
+    def __init__(
+        self,
+        input_dim=2,
+        hidden_dim=90,
+        nb_hidden_layers=4,
+        output_dim=1,
+        activation="x+sin(x)^2",
+    ):
         super(MLP, self).__init__()
         self.fc1 = torch.nn.Linear(input_dim, hidden_dim)
         self.hidden_layers = torch.nn.Sequential(
@@ -192,7 +199,9 @@ class Interp_HNN(torch.nn.Module):
 
         with torch.no_grad():
             for param1, param2, param3 in zip(
-                self.resblocks[i].parameters(), self.resblocks[j].parameters(), self.resblocks[k].parameters()
+                self.resblocks[i].parameters(),
+                self.resblocks[j].parameters(),
+                self.resblocks[k].parameters(),
             ):
                 param2.copy_((param1 + param3) / 2)
 

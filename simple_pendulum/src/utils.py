@@ -7,7 +7,12 @@ import dill as pickle  # dill used because pickle does not support lambda functi
 
 def count_parameters(model):
     """
-    from https://discuss.pytorch.org/t/how-do-i-check-the-number-of-parameters-of-a-model/4325/9
+    Returns the number of learnable parameters in a model
+    Inputs:
+        model(nn.Module): the model for which the number of parameters are desired
+    Outpus:
+        _ (int): number of learnable parameters in the model
+    Source : https://discuss.pytorch.org/t/how-do-i-check-the-number-of-parameters-of-a-model/4325/9
     """
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
 

@@ -2,10 +2,8 @@ import matplotlib.pyplot as plt
 
 import torch
 
-from torchdiffeq import odeint_adjoint as odeint_adjoint
-
-# func must be a nn.Module when using the adjoint method
 from torchdiffeq import odeint as odeint
+
 from .trajectories import *
 import time as time
 
@@ -50,7 +48,9 @@ def plot_traj_furuta(
         ax5.set_ylabel("E")
         ax5.set_ylim((0, torch.max(energy) * 1.1))
     else:
-        fig, (ax1, ax2, ax3, ax4) = plt.subplots(1, 4, figsize=(12, 4), constrained_layout=True, sharex=True)  # , sharey=True)
+        fig, (ax1, ax2, ax3, ax4) = plt.subplots(
+            1, 4, figsize=(12, 4), constrained_layout=True, sharex=True
+        )  # , sharey=True)
 
     ax1.plot(t_eval, q1, label="q1")
     ax2.plot(t_eval, p1, label="p1")
@@ -87,7 +87,15 @@ def plot_traj_furuta(
 
 
 def plot_traj_furuta_withinput(
-    t_eval, q1, p1, q2, p2, energy=None, input=None, title="Trajectory of the generalized coordinates", coord_type="hamiltonian"
+    t_eval,
+    q1,
+    p1,
+    q2,
+    p2,
+    energy=None,
+    input=None,
+    title="Trajectory of the generalized coordinates",
+    coord_type="hamiltonian",
 ):
     """
     This function plots the generalised variables q1, p1, q2, p2, and the energy
@@ -105,7 +113,9 @@ def plot_traj_furuta_withinput(
     """
     # TODO : make this work for two columns
 
-    fig, ax = plt.subplots(2, 3, figsize=(15, 4), constrained_layout=True, sharex=True)  # , sharey=True)
+    fig, ax = plt.subplots(
+        2, 3, figsize=(15, 4), constrained_layout=True, sharex=True
+    )  # , sharey=True)
     if energy is not None:
         ax[1, 2].plot(t_eval, energy, label="energy")
         ax[1, 2].set_title("Energy", fontsize=10)
@@ -233,7 +243,15 @@ def plot_furuta_hat_nom(
         Lp,
     )
     H_hat = furuta_H(
-        q1_hat / w_rescale[0], p1_hat / w_rescale[1], q2_hat / w_rescale[2], p2_hat / w_rescale[3], g, Jr, Lr, Mp, Lp
+        q1_hat / w_rescale[0],
+        p1_hat / w_rescale[1],
+        q2_hat / w_rescale[2],
+        p2_hat / w_rescale[3],
+        g,
+        Jr,
+        Lr,
+        Mp,
+        Lp,
     )
 
     # H_hat = model.H_net(x_hat[:,0,:]).detach().squeeze()
@@ -241,7 +259,12 @@ def plot_furuta_hat_nom(
     H_hat = H_hat.detach().cpu().squeeze()
 
     # nominal trajectory
-    q1_hat, p1_hat, q2_hat, p2_hat = q1_hat.squeeze(), p1_hat.squeeze(), q2_hat.squeeze(), p2_hat.squeeze()
+    q1_hat, p1_hat, q2_hat, p2_hat = (
+        q1_hat.squeeze(),
+        p1_hat.squeeze(),
+        q2_hat.squeeze(),
+        p2_hat.squeeze(),
+    )
     x_nom = x_nom.detach()
 
     q1_nom = x_nom[n, :t_plot, 0].unsqueeze(dim=0)
@@ -269,7 +292,15 @@ def plot_furuta_hat_nom(
         time_=t_eval,
     )
     H_nom = furuta_H(
-        q1_nom / w_rescale[0], p1_nom / w_rescale[1], q2_nom / w_rescale[2], p2_nom / w_rescale[3], g, Jr, Lr, Mp, Lp
+        q1_nom / w_rescale[0],
+        p1_nom / w_rescale[1],
+        q2_nom / w_rescale[2],
+        p2_nom / w_rescale[3],
+        g,
+        Jr,
+        Lr,
+        Mp,
+        Lp,
     )
 
     E_nom = E_nom.detach().cpu().squeeze()
@@ -281,7 +312,9 @@ def plot_furuta_hat_nom(
         p2_nom.squeeze().cpu(),
     )
     t_eval = t_eval.detach().cpu()
-    fig, ax = plt.subplots(2, 3, figsize=(15, 4), constrained_layout=True, sharex=True)  # , sharey=True)
+    fig, ax = plt.subplots(
+        2, 3, figsize=(15, 4), constrained_layout=True, sharex=True
+    )  # , sharey=True)
 
     if H_or_Input == "input":
         H_nom = u_func.forward(t_eval.to(device))
@@ -294,7 +327,9 @@ def plot_furuta_hat_nom(
         ax[1, 2].set_title("Hamiltonian", fontsize=10)
         ax[1, 2].set_xlabel("time (s)")
         ax[1, 2].set_ylabel("H")
-    for q1, p1, q2, p2, E, H, label in [[q1_nom, p1_nom, q2_nom, p2_nom, E_nom, H_nom, "nominal"]]:
+    for q1, p1, q2, p2, E, H, label in [
+        [q1_nom, p1_nom, q2_nom, p2_nom, E_nom, H_nom, "nominal"]
+    ]:
         # q1 = q1.cpu()
         # p1 = p1.cpu()
         # q2 = q2.cpu()
@@ -320,7 +355,9 @@ def plot_furuta_hat_nom(
         ax[0, 2].plot(t_eval[:t_max], E[:t_max], label=label_train, c=color1)
         ax[0, 2].plot(t_eval[t_max - 1 :], E[t_max - 1 :], label=label, c="C0")
         ax[1, 2].plot(t_eval[:], H[:], label=label_train, c="C0")
-    for q1, p1, q2, p2, E, H, label in [[q1_hat, p1_hat, q2_hat, p2_hat, E_hat, H_hat, "prediction"]]:
+    for q1, p1, q2, p2, E, H, label in [
+        [q1_hat, p1_hat, q2_hat, p2_hat, E_hat, H_hat, "prediction"]
+    ]:
 
         q1 = q1.cpu()
         p1 = p1.cpu()
@@ -441,13 +478,30 @@ def plot_longer_horizon_furuta(
     # test trajectories
     x_hat = odeint(model, x_nom[:, 0, :4], t_eval, method="rk4").detach()
 
-    q1_hat = x_hat[:t2, n, 0].unsqueeze(dim=0)  # to do: make this concise with torch split or chunck
+    q1_hat = x_hat[:t2, n, 0].unsqueeze(
+        dim=0
+    )  # to do: make this concise with torch split or chunck
     p1_hat = x_hat[:t2, n, 1].unsqueeze(dim=0)
     q2_hat = x_hat[:t2, n, 2].unsqueeze(dim=0)
     p2_hat = x_hat[:t2, n, 3].unsqueeze(dim=0)
 
     E_hat, _ = get_energy_furuta(
-        device, time_steps, Ts, u_func, g_func, q1_hat, p1_hat, q2_hat, p2_hat, C_q1, C_q2, g, Jr, Lr, Mp, Lp
+        device,
+        time_steps,
+        Ts,
+        u_func,
+        g_func,
+        q1_hat,
+        p1_hat,
+        q2_hat,
+        p2_hat,
+        C_q1,
+        C_q2,
+        g,
+        Jr,
+        Lr,
+        Mp,
+        Lp,
     )
     H_hat = furuta_H(q1_hat, p1_hat, q2_hat, p2_hat, g, Jr, Lr, Mp, Lp)
     # H_hat = model.H_net(x_hat[t1:t2,0,:]).detach().squeeze()
@@ -461,7 +515,22 @@ def plot_longer_horizon_furuta(
     p2_nom = x_nom[n, :t2, 3].unsqueeze(dim=0)
 
     E_nom, _ = get_energy_furuta(
-        device, time_steps, Ts, u_func, g_func, q1_nom, p1_nom, q2_nom, p2_nom, C_q1, C_q2, g, Jr, Lr, Mp, Lp
+        device,
+        time_steps,
+        Ts,
+        u_func,
+        g_func,
+        q1_nom,
+        p1_nom,
+        q2_nom,
+        p2_nom,
+        C_q1,
+        C_q2,
+        g,
+        Jr,
+        Lr,
+        Mp,
+        Lp,
     )
     H_nom = furuta_H(q1_nom, p1_nom, q2_nom, p2_nom, g, Jr, Lr, Mp, Lp)
     E_nom = E_nom[t1:t2].cpu().detach().squeeze()
@@ -482,7 +551,9 @@ def plot_longer_horizon_furuta(
     t_eval = t_eval[t1:]
     t_eval = t_eval.cpu().detach()
 
-    fig, ax = plt.subplots(2, 2, figsize=(15, 6), constrained_layout=True, sharex=True)  # , sharey=True)
+    fig, ax = plt.subplots(
+        2, 2, figsize=(15, 6), constrained_layout=True, sharex=True
+    )  # , sharey=True)
 
     # t_eval = t_eval.cpu()
     for q1, p1, q2, p2, E, H, label in [
@@ -614,7 +685,9 @@ def training_plot(t_eval, train_x, nominal_x):
     # train_x is [batch_size,(q1,p1,q2,p1),time_steps]
     # nominal_x is [time_steps, batch_size, (q1,p1,q2,p1)]
 
-    fig, ax = plt.subplots(2, 2, figsize=(10, 5), constrained_layout=True, sharex=True)  # , sharey=True)
+    fig, ax = plt.subplots(
+        2, 2, figsize=(10, 5), constrained_layout=True, sharex=True
+    )  # , sharey=True)
     t_eval_cpu = t_eval.detach().cpu()
 
     ax[0, 0].plot(t_eval_cpu, train_x[:, 0, 0].detach().cpu(), label="train", c="g")
@@ -662,12 +735,24 @@ def plot_grads(stats, file_path, save):
 
     for layer in range(len(stats["grads_preclip"][0])):
         for iteration in range(len(stats["grads_preclip"])):
-            grads_preclip_min[layer].append(stats["grads_preclip"][iteration][layer].abs().min())
-            grads_preclip_max[layer].append(stats["grads_preclip"][iteration][layer].abs().max())
-            grads_preclip_mean[layer].append(stats["grads_preclip"][iteration][layer].abs().mean())
-            grads_postclip_min[layer].append(stats["grads_postclip"][iteration][layer].abs().min())
-            grads_postclip_max[layer].append(stats["grads_postclip"][iteration][layer].abs().max())
-            grads_postclip_mean[layer].append(stats["grads_postclip"][iteration][layer].abs().mean())
+            grads_preclip_min[layer].append(
+                stats["grads_preclip"][iteration][layer].abs().min()
+            )
+            grads_preclip_max[layer].append(
+                stats["grads_preclip"][iteration][layer].abs().max()
+            )
+            grads_preclip_mean[layer].append(
+                stats["grads_preclip"][iteration][layer].abs().mean()
+            )
+            grads_postclip_min[layer].append(
+                stats["grads_postclip"][iteration][layer].abs().min()
+            )
+            grads_postclip_max[layer].append(
+                stats["grads_postclip"][iteration][layer].abs().max()
+            )
+            grads_postclip_mean[layer].append(
+                stats["grads_postclip"][iteration][layer].abs().mean()
+            )
     grads_preclip_min = torch.tensor(grads_preclip_min)
     grads_preclip_max = torch.tensor(grads_preclip_max)
     grads_preclip_mean = torch.tensor(grads_preclip_mean)

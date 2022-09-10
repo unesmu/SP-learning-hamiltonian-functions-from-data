@@ -74,7 +74,7 @@ TODO: add colab clickable buttons
 ### Example
 
 TODO
-`black --line-length 80`
+`black --line-length 140`
 
 ## References
 

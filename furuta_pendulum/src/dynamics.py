@@ -32,8 +32,16 @@ def furuta_H(q1, p1, q2, p2, g, Jr, Lr, Mp, Lp):
     C5 = (1 / 2) * Mp * g * Lp
 
     # hamiltonian function
-    H = p1**2 * (C1 + C2 * torch.sin(q1) ** 2) + C4 * p2**2 - 2 * p1 * p2 * C3 * torch.cos(q1)
-    H = (1 / 2) * (H) / (C1 * C4 + C4 * C2 * torch.sin(q1) ** 2 - (C3**2) * (torch.cos(q1) ** 2))
+    H = (
+        p1**2 * (C1 + C2 * torch.sin(q1) ** 2)
+        + C4 * p2**2
+        - 2 * p1 * p2 * C3 * torch.cos(q1)
+    )
+    H = (
+        (1 / 2)
+        * (H)
+        / (C1 * C4 + C4 * C2 * torch.sin(q1) ** 2 - (C3**2) * (torch.cos(q1) ** 2))
+    )
     H = H + C5 * (torch.cos(q1) + 1)
 
     return H
@@ -120,7 +128,9 @@ def dynamics_fn_furuta(t, coords, C_q1, C_q2, g, Jr, Lr, Mp, Lp, u_func, g_func)
         - This function has a similar structure as the one in the SymODEN repository
     """
 
-    dq1dt, dp1dt, dq2dt, dp2dt = coord_derivatives_furuta(t, coords, C_q1, C_q2, g, Jr, Lr, Mp, Lp, u_func, g_func)
+    dq1dt, dp1dt, dq2dt, dp2dt = coord_derivatives_furuta(
+        t, coords, C_q1, C_q2, g, Jr, Lr, Mp, Lp, u_func, g_func
+    )
 
     S = torch.hstack((dq1dt, dp1dt, dq2dt, dp2dt))
     return S
@@ -211,7 +221,13 @@ class U_FUNC:
     def forward(self, t):
         """time dependent input"""
         if self.utype == "chirp":
-            u = chirp_fun(t, T=self.params["T"], f0=self.params["f0"], f1=self.params["f1"], scale=self.params["scale"])
+            u = chirp_fun(
+                t,
+                T=self.params["T"],
+                f0=self.params["f0"],
+                f1=self.params["f1"],
+                scale=self.params["scale"],
+            )
         elif self.utype == "sine":
             u = sine_fun(t, scale=self.params["scale"], f=self.params["f1"])
         elif self.utype == "tanh":

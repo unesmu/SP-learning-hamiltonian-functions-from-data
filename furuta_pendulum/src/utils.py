@@ -1,9 +1,4 @@
 import torch
-
-from torchdiffeq import odeint_adjoint as odeint_adjoint
-
-# func must be a nn.Module when using the adjoint method
-from torchdiffeq import odeint as odeint
 import random
 import json
 import numpy as np
@@ -33,6 +28,9 @@ def collect_gradients(named_parameters):
 
 
 def set_device():
+    """
+    Chooses a computing device, GPU if available otherwise it will use CPU
+    """
     # set device to GPU if available otherwise use CPU
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     if device.type == "cuda":
@@ -84,24 +82,6 @@ def count_parameters(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
 
-def load_model(device, hidden_dim=90, nb_hidden_layers=4):
-    H_net = MLP(input_dim=4, hidden_dim=hidden_dim, nb_hidden_layers=nb_hidden_layers, output_dim=1, activation="x+sin(x)^2")
-    model = simple_HNN(input_dim=4, H_net=H_net, device=None)
-    model.to(device)
-    return model
-
-
-def load_model_nes_hdnn(device, utype, u_func=None, hidden_dim=90, nb_hidden_layers=4):
-    G_net = MLP(input_dim=4, hidden_dim=64, nb_hidden_layers=1, output_dim=2, activation="tanh")
-    H_net = MLP(input_dim=4, hidden_dim=90, nb_hidden_layers=4, output_dim=1, activation="x+sin(x)^2")
-    model = Input_HNN(utype=utype, u_func=u_func, G_net=G_net, H_net=H_net, device=device)
-    model.to(device)
-    return model
-
-
-
-
-
 def save_dict(dict, dict_path):
     with open(dict_path, "w") as file:
         file.write(json.dumps(dict))
@@ -143,9 +123,13 @@ def name_from_params(
     min_max_rescale,
     w_rescale=None,
 ):
-
-    weights_title = " | weights = " + str(weights)
-    save_prefix = "{:d}e_p{:d}k_Ts{:1.3f}_".format(epoch_number, int((num_params - num_params % 1000) / 1000), Ts)
+    """
+    Function used to create the name of the directory 
+    for the model from the model's name and parameters used for training
+    """
+    save_prefix = "{:d}e_p{:d}k_Ts{:1.3f}_".format(
+        epoch_number, int((num_params - num_params % 1000) / 1000), Ts
+    )
     if utype is None:
         input = "noinput"
     else:
@@ -186,6 +170,9 @@ def name_from_params(
 
 
 def is_same_size(horizon_list, switch_steps):
+    """
+    To check if two lists are the same length
+    """
     if len(horizon_list) == len(switch_steps):
         print("horizon_list and switch_steps have the same size")
     else:
@@ -193,7 +180,9 @@ def is_same_size(horizon_list, switch_steps):
 
 
 def set_all_seeds(manualSeed=123, new_results=False):
-    # Set random seed for reproducibility
+    """
+    Set random seed for reproducibility
+    """
     if new_results:
         manualSeed = random.randint(1, 10000)  # use if you want new results
     print("Random Seed: ", manualSeed)

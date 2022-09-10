@@ -61,7 +61,15 @@ class Training:
         self.print_every = print_every
 
         self.model_name = model_name
-        self.y0, self.noise_std, self.Ts, self.C, self.m, self.g, self.l = simple_pendulum_parameters()
+        (
+            self.y0,
+            self.noise_std,
+            self.Ts,
+            self.C,
+            self.m,
+            self.g,
+            self.l,
+        ) = simple_pendulum_parameters()
 
         self.time_steps = time_steps
         self.num_trajectories = num_trajectories
@@ -80,12 +88,9 @@ class Training:
             self.epoch_num = sum(switch_steps)
         print("Number of training epochs: ", self.epoch_num)
 
-
-        
         self.model_path, self.plot_path = create_paths(PATH, save_suffix, model_name)
         print("Paths created")
         self._init_model()
-        
 
     def _init_data_loaders(self):
         print("Generating dataset")
@@ -110,17 +115,43 @@ class Training:
         print("Dataset created")
 
     def _init_model(self):
-        
-        if self.model_name == "Input_HNN_chirp" or self.model_name == "Input_HNN_chirp_nohorizon" or self.model_name == "Simple_HNN_":
 
-            H_net = MLP(input_dim=2, hidden_dim=60, nb_hidden_layers=2, output_dim=1, activation="x+sin(x)^2")
-            self.model = Input_HNN(u_func=self.u_func, G_net=self.g_func, H_net=H_net, device=self.device)
+        if (
+            self.model_name == "Input_HNN_chirp"
+            or self.model_name == "Input_HNN_chirp_nohorizon"
+            or self.model_name == "Simple_HNN_"
+        ):
 
-        elif self.model_name == "Input_HNN_chirp_GNN": 
-            H_net = MLP(input_dim=2, hidden_dim=60, nb_hidden_layers=2, output_dim=1, activation="x+sin(x)^2")
-            G_net = MLP(input_dim=2, hidden_dim=30, nb_hidden_layers=1, output_dim=2, activation="tanh")
-            self.model = Input_HNN(u_func=self.u_func, G_net=G_net, H_net=H_net, device=self.device)
-        
+            H_net = MLP(
+                input_dim=2,
+                hidden_dim=60,
+                nb_hidden_layers=2,
+                output_dim=1,
+                activation="x+sin(x)^2",
+            )
+            self.model = Input_HNN(
+                u_func=self.u_func, G_net=self.g_func, H_net=H_net, device=self.device
+            )
+
+        elif self.model_name == "Input_HNN_chirp_GNN":
+            H_net = MLP(
+                input_dim=2,
+                hidden_dim=60,
+                nb_hidden_layers=2,
+                output_dim=1,
+                activation="x+sin(x)^2",
+            )
+            G_net = MLP(
+                input_dim=2,
+                hidden_dim=30,
+                nb_hidden_layers=1,
+                output_dim=2,
+                activation="tanh",
+            )
+            self.model = Input_HNN(
+                u_func=self.u_func, G_net=G_net, H_net=H_net, device=self.device
+            )
+
         elif self.model_name == "Expanding_HNN_chirp":
 
             H_net = Expanding_HNN(
@@ -138,7 +169,9 @@ class Training:
                 block.to(self.device)
                 num_params += count_parameters(block)
 
-            self.model = Input_HNN(u_func=self.u_func, G_net=self.g_func, H_net=H_net, device=self.device)
+            self.model = Input_HNN(
+                u_func=self.u_func, G_net=self.g_func, H_net=H_net, device=self.device
+            )
             self.model.to(self.device)
             num_params1 = count_parameters(self.model)
             num_params2 = count_parameters(self.model.H_net.resblocks[0])
@@ -147,7 +180,7 @@ class Training:
             print("resblock number of parameters :", num_params2)
             print("Total number of H_net parameters :", num_params)
 
-        elif self.model_name == "Expanding_wide_HNN_chirp": 
+        elif self.model_name == "Expanding_wide_HNN_chirp":
 
             H_net = Expanding_wide_HNN(
                 resblock_list=[0],
@@ -164,7 +197,9 @@ class Training:
                 block.to(self.device)
                 num_params += count_parameters(block)
 
-            self.model = Input_HNN(u_func=self.u_func, G_net=self.g_func, H_net=H_net, device=self.device)
+            self.model = Input_HNN(
+                u_func=self.u_func, G_net=self.g_func, H_net=H_net, device=self.device
+            )
             self.model.to(self.device)
             num_params1 = count_parameters(self.model)
             num_params2 = count_parameters(self.model.H_net.resblocks[0])
@@ -190,7 +225,9 @@ class Training:
                 block.to(self.device)
                 num_params += count_parameters(block)
 
-            self.model = Input_HNN(u_func=self.u_func, G_net=self.g_func, H_net=H_net, device=self.device)
+            self.model = Input_HNN(
+                u_func=self.u_func, G_net=self.g_func, H_net=H_net, device=self.device
+            )
             self.model.to(self.device)
             num_params1 = count_parameters(self.model)
             num_params2 = count_parameters(self.model.H_net.resblocks[0])
@@ -217,7 +254,9 @@ class Training:
                 block.to(self.device)
                 num_params += count_parameters(block)
 
-            self.model = Input_HNN(u_func=self.u_func, G_net=self.g_func, H_net=H_net, device=self.device)
+            self.model = Input_HNN(
+                u_func=self.u_func, G_net=self.g_func, H_net=H_net, device=self.device
+            )
             self.model.to(self.device)
             num_params1 = count_parameters(self.model)
             num_params2 = count_parameters(self.model.H_net.resblocks[0])
@@ -226,8 +265,10 @@ class Training:
             print("resblock number of parameters :", num_params2)
             print("Total number of H_net parameters :", num_params)
 
-        print("Model initiatialized \nNumber of parameters:", count_parameters(self.model))
-            
+        print(
+            "Model initiatialized \nNumber of parameters:", count_parameters(self.model)
+        )
+
         self.model.to(self.device)
 
     def _output_training_stats(self, step, train_loss, test_loss, train_time, test_time):
@@ -243,7 +284,10 @@ class Training:
                 )
                 self.test_epochs.append(step)
             else:
-                print("[%3d/%3d]\t train loss: %4e, t_train: %2.2f" % (step, self.epoch_num, train_loss, train_time))
+                print(
+                    "[%3d/%3d]\t train loss: %4e, t_train: %2.2f"
+                    % (step, self.epoch_num, train_loss, train_time)
+                )
 
     def _train_step(self, train_loss, x, t_eval):
         """
@@ -253,11 +297,16 @@ class Training:
         # x is [batch_size,(q1,p1,q2,p1),time_steps]
         t_eval = t_eval[0, : self.horizon]
 
-        train_x_hat = odeint(self.model, x[:, 0, :], t_eval, method="rk4", options=dict(step_size=self.Ts))
+        train_x_hat = odeint(
+            self.model, x[:, 0, :], t_eval, method="rk4", options=dict(step_size=self.Ts)
+        )
         # train_x_hat is [time_steps, batch_size, (q1,p1,q2,p1)]
 
         train_loss_mini = L2_loss(
-            torch.permute(x[:, : self.horizon, :], (1, 0, 2)), train_x_hat[: self.horizon, :, :], self.w, param=self.loss_type
+            torch.permute(x[:, : self.horizon, :], (1, 0, 2)),
+            train_x_hat[: self.horizon, :, :],
+            self.w,
+            param=self.loss_type,
         )
         # after permute x is [time_steps, batch_size, (q1,p1,q2,p1),]
 
@@ -277,10 +326,15 @@ class Training:
         # run test data
         t_eval = t_eval[0, : self.horizon]
 
-        test_x_hat = odeint(self.model, x[:, 0, :], t_eval, method="rk4", options=dict(step_size=self.Ts))
+        test_x_hat = odeint(
+            self.model, x[:, 0, :], t_eval, method="rk4", options=dict(step_size=self.Ts)
+        )
         # test_loss_mini = L2_loss(torch.permute(x[:, :, :horizon], (2,0,1)) , test_x_hat[:horizon,:,:],w)
         test_loss_mini = L2_loss(
-            torch.permute(x[:, : self.horizon, :], (1, 0, 2)), test_x_hat[: self.horizon, :, :], self.w, param=self.loss_type
+            torch.permute(x[:, : self.horizon, :], (1, 0, 2)),
+            test_x_hat[: self.horizon, :, :],
+            self.w,
+            param=self.loss_type,
         )
 
         test_loss = test_loss + test_loss_mini.item()
@@ -293,7 +347,9 @@ class Training:
         training procedure
         """
 
-        self.optim = torch.optim.AdamW(self.model.parameters(), self.lr, weight_decay=self.weight_decay)  # Adam
+        self.optim = torch.optim.AdamW(
+            self.model.parameters(), self.lr, weight_decay=self.weight_decay
+        )  # Adam
 
         logs = {"train_loss": [], "test_loss": []}
 
@@ -307,11 +363,15 @@ class Training:
             t1 = time.time()
 
             if self.horizon_type == "auto":
-                self.horizon = select_horizon_list(step, self.horizon_list, self.switch_steps)
+                self.horizon = select_horizon_list(
+                    step, self.horizon_list, self.switch_steps
+                )
 
             # increase the model size and initialise the new parameters
             if self.resnet_config:
-                self.model = multilevel_strategy_update(self.device, step, self.model, self.resnet_config, self.switch_steps)
+                self.model = multilevel_strategy_update(
+                    self.device, step, self.model, self.resnet_config, self.switch_steps
+                )
 
             self.model.train()
 
@@ -335,7 +395,9 @@ class Training:
 
             test_time = time.time() - t2
 
-            self._output_training_stats(step, train_loss, test_loss, train_time, test_time)
+            self._output_training_stats(
+                step, train_loss, test_loss, train_time, test_time
+            )
 
         logs["test_epochs"] = self.test_epochs
 

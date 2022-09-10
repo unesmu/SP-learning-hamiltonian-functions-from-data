@@ -31,7 +31,9 @@ def plot_traj_pend(
     y_fontsize = 15
     if torch.any(energy):
         if torch.any(input):
-            fig, (ax1, ax2, ax3, ax4) = plt.subplots(1, 4, figsize=(15, 4), constrained_layout=True)
+            fig, (ax1, ax2, ax3, ax4) = plt.subplots(
+                1, 4, figsize=(15, 4), constrained_layout=True
+            )
             ax3.plot(t_eval, energy, label="energy")
 
             ax3.set_title("Energy", fontsize=small_title_fontsize)
@@ -45,7 +47,9 @@ def plot_traj_pend(
             ax4.set_ylabel("U", fontsize=y_fontsize)
 
         else:
-            fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(12, 4), constrained_layout=True)
+            fig, (ax1, ax2, ax3) = plt.subplots(
+                1, 3, figsize=(12, 4), constrained_layout=True
+            )
             ax3.plot(t_eval, energy, label="energy")
 
             ax3.set_title("Energy", fontsize=small_title_fontsize)
@@ -53,7 +57,9 @@ def plot_traj_pend(
             ax3.set_ylabel("E", fontsize=y_fontsize)
             ax3.set_ylim((0, torch.max(energy) * 1.1))
     else:
-        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(8, 4), constrained_layout=True, sharex=True)
+        fig, (ax1, ax2) = plt.subplots(
+            1, 2, figsize=(8, 4), constrained_layout=True, sharex=True
+        )
 
     ax1.plot(t_eval, q, label="q")
     ax2.plot(t_eval, p, label="p")
@@ -116,7 +122,9 @@ def train_test_loss_plot(
                 xycoords="data",
                 xytext=(-70, 100),
                 textcoords="offset points",
-                arrowprops=dict(arrowstyle="->", connectionstyle="angle,angleA=0,angleB=90,rad=10"),
+                arrowprops=dict(
+                    arrowstyle="->", connectionstyle="angle,angleA=0,angleB=90,rad=10"
+                ),
             )
         ax.annotate(
             "horizon = %d" % horizons[-1],
@@ -124,7 +132,9 @@ def train_test_loss_plot(
             xycoords="data",
             xytext=(+20, 100),
             textcoords="offset points",
-            arrowprops=dict(arrowstyle="->", connectionstyle="angle,angleA=0,angleB=90,rad=10"),
+            arrowprops=dict(
+                arrowstyle="->", connectionstyle="angle,angleA=0,angleB=90,rad=10"
+            ),
         )
 
     if file_path is not None:
@@ -182,7 +192,9 @@ def plot_results(
     input = model_training.model.u_func.forward(t_eval).cpu().detach()
     t_eval = t_eval.cpu().detach()
 
-    fig, (ax1, ax2, ax3, ax4) = plt.subplots(1, 4, figsize=(12, 4), constrained_layout=True)
+    fig, (ax1, ax2, ax3, ax4) = plt.subplots(
+        1, 4, figsize=(12, 4), constrained_layout=True
+    )
 
     fig.suptitle(title, fontsize=12)
 
@@ -201,7 +213,9 @@ def plot_results(
         if only_pred == False and label == "nominal":
             ax1.plot(t_eval[:train_horizon], q[:train_horizon], label="train", color="g")
             ax2.plot(t_eval[:train_horizon], p[:train_horizon], label="train", color="g")
-            ax3.plot(t_eval[:train_horizon], energy[:train_horizon], label="train", color="g")
+            ax3.plot(
+                t_eval[:train_horizon], energy[:train_horizon], label="train", color="g"
+            )
 
         ax1.legend()
         ax1.set_title("generalized position (q)", fontsize=10)

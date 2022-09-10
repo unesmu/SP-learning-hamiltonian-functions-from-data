@@ -1,11 +1,6 @@
 from torch.utils.data import Dataset, DataLoader, random_split
 import torch
 
-from torchdiffeq import odeint_adjoint as odeint_adjoint
-
-# func must be a nn.Module when using the adjoint method
-from torchdiffeq import odeint as odeint
-
 from .models import *
 from .dynamics import *
 from .data import *
@@ -68,7 +63,17 @@ class TrajectoryDataset_furuta(Dataset):
 
 
 def data_loader_furuta(
-    q1, p1, q2, p2, energy, derivatives, t_eval, batch_size, shuffle=True, proportion=0.5, coord_type="hamiltonian"
+    q1,
+    p1,
+    q2,
+    p2,
+    energy,
+    derivatives,
+    t_eval,
+    batch_size,
+    shuffle=True,
+    proportion=0.5,
+    coord_type="hamiltonian",
 ):
     """
     Description:
@@ -79,7 +84,9 @@ def data_loader_furuta(
 
     """
     # split  into train and test
-    full_dataset = TrajectoryDataset_furuta(q1, p1, q2, p2, t_eval, derivatives, coord_type=coord_type)
+    full_dataset = TrajectoryDataset_furuta(
+        q1, p1, q2, p2, t_eval, derivatives, coord_type=coord_type
+    )
     if proportion:
 
         train_size = int(proportion * len(full_dataset))
@@ -132,7 +139,22 @@ def load_data_device(
     """
     # create trajectories
     q1, p1, q2, p2, energy, derivatives, t_eval = multiple_trajectories_furuta(
-        "cpu", init_method, time_steps, num_trajectories, u_func, g_func, None, Ts, noise_std, C_q1, C_q2, g, Jr, Lr, Mp, Lp
+        "cpu",
+        init_method,
+        time_steps,
+        num_trajectories,
+        u_func,
+        g_func,
+        None,
+        Ts,
+        noise_std,
+        C_q1,
+        C_q2,
+        g,
+        Jr,
+        Lr,
+        Mp,
+        Lp,
     )
 
     q1 = (q1 * w_rescale[0]).detach().to(device)
@@ -142,13 +164,21 @@ def load_data_device(
 
     if min_max_rescale:
         if rescale_dims[0]:
-            q1 = (q1 - q1.amin(dim=(1)).unsqueeze(dim=1)) / ((q1.amax(dim=(1)) - q1.amin(dim=(1))).abs().unsqueeze(dim=1))
+            q1 = (q1 - q1.amin(dim=(1)).unsqueeze(dim=1)) / (
+                (q1.amax(dim=(1)) - q1.amin(dim=(1))).abs().unsqueeze(dim=1)
+            )
         if rescale_dims[1]:
-            q2 = (q2 - q2.amin(dim=(1)).unsqueeze(dim=1)) / ((q2.amax(dim=(1)) - q2.amin(dim=(1))).abs().unsqueeze(dim=1))
+            q2 = (q2 - q2.amin(dim=(1)).unsqueeze(dim=1)) / (
+                (q2.amax(dim=(1)) - q2.amin(dim=(1))).abs().unsqueeze(dim=1)
+            )
         if rescale_dims[2]:
-            p1 = (p1 - p1.amin(dim=(1)).unsqueeze(dim=1)) / ((p1.amax(dim=(1)) - p1.amin(dim=(1))).abs().unsqueeze(dim=1))
+            p1 = (p1 - p1.amin(dim=(1)).unsqueeze(dim=1)) / (
+                (p1.amax(dim=(1)) - p1.amin(dim=(1))).abs().unsqueeze(dim=1)
+            )
         if rescale_dims[3]:
-            p2 = (p2 - p2.amin(dim=(1)).unsqueeze(dim=1)) / ((p2.amax(dim=(1)) - p2.amin(dim=(1))).abs().unsqueeze(dim=1))
+            p2 = (p2 - p2.amin(dim=(1)).unsqueeze(dim=1)) / (
+                (p2.amax(dim=(1)) - p2.amin(dim=(1))).abs().unsqueeze(dim=1)
+            )
 
     energy = energy.detach().to(device)
     derivatives = derivatives.detach().to(device)
