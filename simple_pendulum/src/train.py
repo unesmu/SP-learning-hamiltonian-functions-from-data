@@ -161,7 +161,7 @@ class Training:
             )
             num_params = 0
             for block in H_net.resblocks:
-                block.to(self.sdevice)
+                block.to(self.device)
                 num_params += count_parameters(block)
 
             self.model = Input_HNN(u_func=self.u_func, G_net=self.g_func, H_net=H_net, device=self.device)

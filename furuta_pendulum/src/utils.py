@@ -133,7 +133,7 @@ def load_data_device(
     # create trajectories
     q1, p1, q2, p2, energy, derivatives, t_eval = multiple_trajectories_furuta(
         "cpu", init_method, time_steps, num_trajectories, u_func, g_func, None, Ts, noise_std, C_q1, C_q2, g, Jr, Lr, Mp, Lp
-    )  # u, G,
+    )
 
     q1 = (q1 * w_rescale[0]).detach().to(device)
     p1 = (p1 * w_rescale[1]).detach().to(device)
