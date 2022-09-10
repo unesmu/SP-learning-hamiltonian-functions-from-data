@@ -15,7 +15,6 @@ import time as time
 
 import json
 
-from .autoencoder_train import *
 from .trajectories import *
 from .dynamics import *
 
@@ -39,6 +38,7 @@ def print_ae_train(x_hat, x, n, horizon):
         'Autoencoder output compared to nominal trajectories (Newtonian coordinates)')
     plt.show()
 
+    
 def plot_distribution(train_loader, save=False, path=''):
 
     x,y = next(iter(train_loader))
