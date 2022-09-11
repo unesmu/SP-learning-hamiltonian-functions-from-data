@@ -16,14 +16,7 @@ def plot_traj_pend(
     file_path=None,
 ):
     """
-    This function plots the generalised variable q p in function of the evaluation
-    time. it can also
-    Inputs:
-      t_eval ()
-      q ()
-      p ()
-    Outputs:
-      None
+    This function plots the generalised variable q p at the times in t_eval
     """
     suptile_fontsize = 20
     small_title_fontsize = 16

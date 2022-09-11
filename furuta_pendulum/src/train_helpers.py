@@ -4,10 +4,20 @@ def L2_loss(u, v, w=False, dim=(0, 1), param="L2", rescale_loss=False, denom=Non
     """
     Calculate the L2 loss of between u and v
      u and v expected with shape : [time_steps, batch_size , (q1,p1,q2,p1)]
+
     Input:
-        u (tensor) :  nominal trajectory
-        v (tensor) :  predicted trajectory
-       
+        - u (tensor) :  nominal trajectory
+        - v (tensor) :  predicted trajectory
+        - w (bool or tensor) : either false or a tensor containing the weights
+                             to rescale each coordinate 
+        - dim (tuple) : dimensions on which to sum the terms 
+                      (the time step and batch dimensions)
+        - param (string) : type of loss, can be one of : 'L2weighted' or 'L2'
+        - rescale_loss (bool) : rescale the loss function using min max scaling
+        - denom (None or tensor) : if rescale_loss==True this needs to containg the
+                                 pre calculated denominator for min max scaling
+                                 why? because it is calculated only when the horizon 
+                                 is changed
     Output:
         loss (tensor) : scalar loss
 
@@ -30,7 +40,7 @@ def L2_loss(u, v, w=False, dim=(0, 1), param="L2", rescale_loss=False, denom=Non
 
 def select_horizon_list(
     step,
-    epoch_number,
+    epochs,
     horizon_list=[50, 100, 150, 200, 250, 300],
     switch_steps=[200, 200, 200, 150, 150, 150],
 ):
@@ -43,10 +53,10 @@ def select_horizon_list(
         other epochs with the horizon 200.
     Inputs:
         step (int) : current epoch 
-        epoch_number (int) : total number of epochs
+        epochs (int) : total number of epochs
         horizon_list (list) : horizons with which the model will be trained
         switch_steps (list) : number of epochs per horizon
-    Outpus:
+    Outputs:
         horizon_updated (bool) : indicates whether or not the horizon
                                 has been updated this run
         horizon (bool) : the new horizon value

@@ -10,49 +10,6 @@ from .utils import *
 from .train_helpers import *
 
 
-class Training:
-    """
-    Training class
-    """
-
-    def __init__(self):
-        pass
-
-    def _init_model(self, model_name):
-        pass
-
-    def _output_training_stats(self, epoch, train_loss, test_loss, t0):
-        """
-        Output and save training stats every epoch or multiple of epochs
-        """
-
-        if epoch % self.print_every == 0 or epoch == self.num_epochs - 1:
-            print(
-                "[%d/%d]\t train loss: %.4f, test loss: %.4f, t: %2.3f"
-                % (epoch, self.num_epochs, train_loss, test_loss, time.time() - t0)
-            )
-
-        return
-
-    def _train_step(self):
-        """
-        basic training step of the model
-        """
-        return
-
-    def _test_step(self):
-        """
-        basic training step of the model
-        """
-        return
-
-    def train(self):
-        """
-        Training function. Uses the classes variables, and returns stats from the
-        training procedure
-        """
-        return
-
 
 def train(
     device,
@@ -64,7 +21,6 @@ def train(
     grad_clip,
     lr_schedule,
     begin_decay,
-    epoch_number,
     resnet_config=False,
     alternating=False,
     horizon=False,
@@ -79,10 +35,43 @@ def train(
 ):
     """
     Description:
-
+        Training function used for all the models on the furuta pendulum, except for
+        the autoencoder model
     Inputs:
+         - device (string) : device to use to generate the trajectories 
+                            (cpu or GPU, use get_device() )
+        - model (nn.Module) : model that has been trained 
+        - Ts (Float) : sampling time
+        - train_loader (data loader object) : train loader 
+        - test_loader (data loader object) : test loader 
+        - w (bool or tensor) : either false or a tensor containing the weights
+                             to rescale each coordinate 
+        - grad_clip (bool) : activate gradient clipping or not
+        - lr_schedule (bool) : use a learning rate scheduler or not
+        - begin_decay (int) : epoch at which learning rate decay should start
+        - resnet_config (int) : resnet config, one of the folowing numbers:
+                                    - 1 : Expanding HNN (and its variants)
+                                    - 2 : Interp HNN (and its variants)
+        - alternating (bool) : if true every epoch there are two iterations, one
+                               iteration where the NN approximating the Hamiltonian
+                               function is frozen, and one epoch where the NN approximating
+                               the input matrix is frozen
+        - horizon (int) : if a constant training horizon is wanted use this
+                          otherwise set to False
+        - horizon_type (string) : type of horizon can be :
+                                                    - 'auto' : is determined by a function 
+                                                               and the training epoch
+                                                    - 'constant' : stays constant
+        - horizon_list (list) : horizons with which the model will be trained
+        - switch_steps (list) : number of epochs per horizon
+        - epochs (int) : number of training epochs
+        - loss_type (string) : type of loss, can be one of : 'L2weighted' or 'L2'
+        - collect_grads (bool) : save the gradient values during training
+        - rescale_loss (bool) : rescale the loss function during training
+        - rescale_dims (list): list containing how the coordinates were rescaled
 
-    Outpus:
+    Outptus:
+        - logs (dict) : dict containing statistics from the training run
     """
 
     lr = 1e-3
@@ -113,7 +102,7 @@ def train(
 
         if horizon_type == "auto":
             horizon_updated, horizon = select_horizon_list(
-                step, epoch_number, horizon_list, switch_steps
+                step, epochs, horizon_list, switch_steps
             )
         elif horizon_type == "constant":
             horizon = horizon

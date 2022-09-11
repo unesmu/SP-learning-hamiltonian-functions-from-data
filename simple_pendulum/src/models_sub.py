@@ -4,13 +4,7 @@ import torch
 def choose_nonlinearity(name):
     """
     From the SymODEN repository
-
-    Description:
-
-    Inputs:
-
-    Outpus:
-
+    returns an activation function that can be evaluated
     """
     nl = None
     if name == "tanh":

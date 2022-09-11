@@ -453,13 +453,13 @@ def train_test_loss_plot(
     Description:
         plot of train and test trajectories after training
     Inputs:
-         - loss_train () :
-         - loss_test () :
-         - epochs () :
-         - file_path () :
-         - horizons () :
-         - switch_steps () :
-         - title () :
+         - loss_train (tensor) : train loss vector
+         - loss_test (tensor) : test loss vector
+         - epochs (int) : maximum number of training epochs
+         - file_path (string) : path where the plot should be saved
+         - horizons (list) : horizons with which the model will be trained
+         - switch_steps (list) : number of epochs per horizon
+         - title (string) : title of the plot
     Outputs:
         None
     """
