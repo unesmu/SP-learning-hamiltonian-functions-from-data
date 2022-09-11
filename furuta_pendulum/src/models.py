@@ -316,7 +316,10 @@ class simple_HNN(torch.nn.Module):
 
 
 class Autoencoder(torch.nn.Module):
-    """ """
+    """ 
+    Autoencoder model, can be either latent or encoded as described in the previous student's report
+    for the report the latent version was used
+    """
 
     def __init__(
         self, nb_hidden_layers=1, hidden_dim=64, activation="tanh", config="latent"
@@ -367,9 +370,6 @@ class Autoencoder(torch.nn.Module):
             # coordinates back in the original space but using the decoder
             x_hat = self.decoder(z)
 
-            # x_hat = torch.stack((q1[:,:,0],q_dot_hat[:,:,0],q2[:,:,0],q_dot_hat[:,:,1]),dim=2)
-
-            # x_hat = torch.stack((q1[:,:,0],q_dot_hat[:,:,0],q2[:,:,0],q_dot_hat[:,:,1]),dim=2)
         if self.config == "encoded":
             z = self.encoder(x)
             x_hat = self.decoder(z)
@@ -390,19 +390,15 @@ class Input_HNN(torch.nn.Module):
         self.u_func = u_func
         self.device = device
         self.dissip = dissip
-        # add learnable dissipation coefficients 0.000009, 0.00004
-        # torch.nn.Parameter(torch.randn(1)+1)
+        # add learnable dissipation coefficients
         self.C1_dissip = torch.nn.Parameter(torch.tensor([0.000009]).sqrt())
         self.C1_dissip.requires_grad = True
-        # torch.nn.Parameter(torch.randn(1)+1)
         self.C2_dissip = torch.nn.Parameter(torch.tensor([0.00004]).sqrt())
         self.C2_dissip.requires_grad = True
 
     def forward(self, t, x):
         with torch.enable_grad():
             q_p = x[:, :4]
-
-            # q1, p1, q2, p2 = torch.chunk(x,4,dim=-1)
 
             q_p.requires_grad_(True)
 

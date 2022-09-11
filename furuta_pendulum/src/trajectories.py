@@ -29,24 +29,24 @@ def get_trajectory_furuta(
     Given the parameters, initial position, and inputs generate  trajectories
     of a furuta pendulum 
     Inputs:
-        device (string) : device to use to generate the trajectories 
+         - device (string) : device to use to generate the trajectories 
                             (cpu or GPU, use get_device() )
-        init_method (string) : how to generate the random initial conditions 
+         - init_method (string) : how to generate the random initial conditions 
                                 (see get_init_state()'s docstring)
-        num_trajectories (int) : number of trajectories
-        u_func (class) : class which containes the input function
-        g_func (class) : class which containes the input matrix
-        time_steps (int) : number of desired time steps
+         - num_trajectories (int) : number of trajectories
+         - u_func (class) : class which containes the input function
+         - g_func (class) : class which containes the input matrix
+         - time_steps (int) : number of desired time steps
                             (simulate the furta for a number time_steps of time steps)
-        y0 (tensor) : manually enter inital conditions
-        noise_std (Float) : add noise to the created trajectories
-        Ts (Float) : sampling time
-        C_q1 (Float) : friction coefficient
-        C_q2 (Float) : friction coefficient
-        g, Jr, Lr, Mp, Lp (Float) : furuta pendulum parameters
+         - y0 (tensor) : manually enter inital conditions
+         - noise_std (Float) : add noise to the created trajectories
+         - Ts (Float) : sampling time
+         - C_q1 (Float) : friction coefficient
+         - C_q2 (Float) : friction coefficient
+         - g, Jr, Lr, Mp, Lp (Float) : furuta pendulum parameters
     Outputs:
-        q1, .., p2 (tensor) :  tensor containing generalized coordinates at different time steps
-        t_eval (tensor) : time steps at which the coordinates were generated
+        - q1, .., p2 (tensor) :  tensor containing generalized coordinates at different time steps
+        - t_eval (tensor) : time steps at which the coordinates were generated
     """
 
     # sampling time
@@ -106,8 +106,8 @@ def get_init_state(n, init_method):
       Returns initial states q1,p1,q2,p2 for the Furuta pendulum
       The angular velocities ( /generalized momenmtums) are set to zero
     Inputs :
-      n (int) : number of initial states
-      init_method (string): The way to generate the random initial states, can be one of: 
+      - n (int) : number of initial states
+      - init_method (string): The way to generate the random initial states, can be one of: 
             random_nozero
             random_closetozero
             random_closetopi
@@ -115,7 +115,7 @@ def get_init_state(n, init_method):
             random_closetopi_pos
 
     Outputs :
-      y0(tensor) : inital conditions
+      - y0(tensor) : inital conditions
 
     """
 

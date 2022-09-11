@@ -1,9 +1,6 @@
 import torch
 
-from torchdiffeq import odeint_adjoint as odeint_adjoint
-
-# func must be a nn.Module when using the adjoint method
-from torchdiffeq import odeint as odeint
+from torchdiffeq import odeint
 
 import time as time
 

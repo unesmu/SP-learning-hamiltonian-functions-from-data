@@ -10,11 +10,17 @@ from .trajectories import *
 class TrajectoryDataset_furuta(Dataset):
     """
     Description:
-
+        Custom dataset to load the training trajectories.
+        Can return trajectories in "newtonian" or "hamiltonian" 
+        coordinate system
     Inputs:
-
-    Outpus:
-
+        - q1 (tensor) : generalized position q1
+        - p1 (tensor) : generalized momentum p1
+        - q2 (tensor) : generalized position q1
+        - p2 (tensor) : generalized momentum p2
+        - t_eval (tensor) : time at which the coordinates were evaluated
+        - derivatives (tensor) : derivatives evaluated at each time step
+        - coord_type (string) : coordinate system, either "hamiltonian" or "newtonian"
     """
 
     def __init__(self, q1, p1, q2, p2, t_eval, derivatives, coord_type="hamiltonian"):
@@ -77,11 +83,9 @@ def data_loader_furuta(
 ):
     """
     Description:
+        Creates train and test data loaders when given the trajectories
 
-    Inputs:
-
-    Outpus:
-
+    See the load_data_device() docstring for more info
     """
     # split  into train and test
     full_dataset = TrajectoryDataset_furuta(
@@ -132,10 +136,36 @@ def load_data_device(
 ):
     """
     Description:
+        Wrapper for energy_furuta() which first gets the derivative then calculates the energy
 
     Inputs:
+        - device (string) : device to use to generate the trajectories 
+                            (cpu or GPU, use get_device() )
+        - init_method (string) : how to generate the random initial conditions 
+                                (see get_init_state()'s docstring)
+        - w_rescale (list): list containing how the coordinates were rescaled
+        - u_func (class) : class which containes the input function
+        - g_func (class) : class which containes the input matrix
+        - time_steps (int) : number of desired time steps
+                            (simulate the furta for a number time_steps of time steps)
+        - num_trajectories (int) : number of trajectories to generate
+        - shuffle (bool) : shuffle the dataset at the end of each epoch
+        - coord_type="hamiltonian",
+        - proportion (float) : train test split proportion
+        - batch_size (int) : batch size
+        - Ts (Float) : sampling time
+        - noise_std (flot) : float 
+        - C_q1 (float) : coefficient of friction related to p1 ( and q1)
+        - C_q2 (float) : coefficient of friction related to p2 ( and q2)
+        - g, Jr, Lr, Mp, Lp (Float) : furuta pendulum parameters
+        - min_max_rescale (bool) : perform min max scaling on training and testing set
+        - rescale_dims (list or bool) : which coordinates have been rescaled 
+                                    example : w = [1,1,1,1]
+                                              w = [1,1,1,0]
 
-    Outpus:
+    Outputs:
+        train_loader (data loader object) : train loader
+        test_loader (data loader object) : test loader
     """
     # create trajectories
     q1, p1, q2, p2, energy, derivatives, t_eval = multiple_trajectories_furuta(
@@ -197,5 +227,5 @@ def load_data_device(
         shuffle=shuffle,
         proportion=proportion,
         coord_type=coord_type,
-    )  # u, G,
+    )
     return train_loader, test_loader

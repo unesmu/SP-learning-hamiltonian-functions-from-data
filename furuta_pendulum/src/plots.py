@@ -34,7 +34,6 @@ def plot_traj_furuta(
     Outputs:
       None
     """
-    # TODO : make this work for two columns
     if torch.any(energy):
 
         fig, (ax1, ax2, ax3, ax4, ax5) = plt.subplots(
@@ -111,11 +110,10 @@ def plot_traj_furuta_withinput(
     Outputs:
       None
     """
-    # TODO : make this work for two columns
 
     fig, ax = plt.subplots(
         2, 3, figsize=(15, 4), constrained_layout=True, sharex=True
-    )  # , sharey=True)
+    )
     if energy is not None:
         ax[1, 2].plot(t_eval, energy, label="energy")
         ax[1, 2].set_title("Energy", fontsize=10)
@@ -191,12 +189,42 @@ def plot_furuta_hat_nom(
 ):
     """
     Description:
-      This function plots the generalised variables q p, the energy at the time
+      This function plots the generalised variables q p, and the energy at the time
       t_eval at which they were evaluated
     Inputs:
-      t_eval ()
-      q ()
-      p ()
+        - device (string) : device to use to generate the trajectories 
+                (cpu or GPU, use get_device() )
+        - model (nn.Module) : model that has been trained
+        - u_func (class) : class which containes the input function
+        - g_func (class) : class which containes the input matrix
+        - utype (string): can be one of :
+                        'chirp'
+                        'sine'
+                        'tanh'
+                        'multisine'
+                        'step'
+                        None
+        - gtype (string or bool): can be one of :
+                                    'simple'
+                                     None
+        - data_loader_t (dataloader object) : dataloader that will be used for the 
+                                               nominal trajectories
+        - n (int) : integer indicater which sample in the batch from data_loader_tt should
+                    be plotted
+        - t_max (int) : how many samples were used in training, these will be shown in
+                                green in the plot 
+        - C_q1 (Float) : friction coefficient
+        - C_q2 (Float) : friction coefficient
+        - g, Jr, Lr, Mp, Lp (Float) : furuta pendulum parameters
+        - t_plot () : time step at which the plot should stop
+        - only_pred (bool) : use 1 if using test trajectories
+                             use 0 if using train trajectories
+        - H_or_Input () : if "input" will plot the input function in a plot,
+                        otherwise it will know the Hamiltonian function
+        - title (string): title of the plot
+        - file_path (string) : where to save the plot
+        - w_rescale (list): list containing how the coordinates were rescaled
+
     Outputs:
       None
     """
@@ -314,7 +342,7 @@ def plot_furuta_hat_nom(
     t_eval = t_eval.detach().cpu()
     fig, ax = plt.subplots(
         2, 3, figsize=(15, 4), constrained_layout=True, sharex=True
-    )  # , sharey=True)
+    ) 
 
     if H_or_Input == "input":
         H_nom = u_func.forward(t_eval.to(device))
@@ -330,12 +358,7 @@ def plot_furuta_hat_nom(
     for q1, p1, q2, p2, E, H, label in [
         [q1_nom, p1_nom, q2_nom, p2_nom, E_nom, H_nom, "nominal"]
     ]:
-        # q1 = q1.cpu()
-        # p1 = p1.cpu()
-        # q2 = q2.cpu()
-        # p2 = p2.cpu()
-        # E = E.cpu()
-        # H = H.cpu()
+
         label_train = "train"
         color1 = "g"
         if only_pred:
@@ -374,33 +397,17 @@ def plot_furuta_hat_nom(
             show_pred = False
 
         ax[0, 0].plot(t_eval[:], q1[:], label=label_train, c=color, linewidth=1)
-        # if show_pred:
-        #     ax[0, 0].plot(t_eval[t_max-1:], q1[t_max-1:], label=label, c='r')
 
         ax[1, 0].plot(t_eval[:], p1[:], label=label_train, c=color, linewidth=1)
-        # if show_pred:
-        #     ax[1, 0].plot(t_eval[t_max-1:], p1[t_max-1:], label=label, c='r')
 
         ax[0, 1].plot(t_eval[:], q2[:], label=label_train, c=color, linewidth=1)
-        # if show_pred:
-        #     ax[0, 1].plot(t_eval[t_max-1:], q2[t_max-1:], label=label, c='r')
 
         ax[1, 1].plot(t_eval[:], p2[:], label=label_train, c=color, linewidth=1)
-        # if show_pred:
-        #     ax[1, 1].plot(t_eval[t_max-1:], p2[t_max-1:], label=label, c='r')
 
         ax[0, 2].plot(t_eval[:], E[:], label=label_train, c=color, linewidth=1)
-        # if show_pred:
-        #     ax[0, 2].plot(t_eval[t_max-1:], E[t_max-1:], label=label, c='r')
 
         if H_or_Input == "H":
             ax[1, 2].plot(t_eval[:], H[:t_max], label=label_train, c=color)
-            # if show_pred:
-            #     ax[1, 2].plot(t_eval[t_max-1:], H[t_max-1:],
-            #                   label=label, c='r')
-
-    # for j in range(3): # show all of the legends
-    #   for i in range(2):
 
     ax[0, 0].legend()
 
@@ -424,188 +431,14 @@ def plot_furuta_hat_nom(
     ax[0, 2].set_title("Energy", fontsize=10)
     ax[0, 2].set_xlabel("time (s)")
     ax[0, 2].set_ylabel("E")
-    # ax[0,2].set_ylim(bottom=0)
-    # ax[0,2].set_ylim(0,torch.max(torch.cat((E_hat.cpu() ,E_nom.cpu())))*1.1) # because sometimes it won't appear on the plot
 
     # add larger title on top
     fig.suptitle(title, fontsize=12)
 
     if file_path is not None:
-        # ,bbox_inches='tight') # dpi
         plt.savefig(file_path, format="png", dpi=400)
-        # plt.savefig(file_path, format="pdf", bbox_inches="tight")
     plt.show()
     return
-
-
-def plot_longer_horizon_furuta(
-    device,
-    model,
-    u_func,
-    g_func,
-    utype,
-    gtype,
-    test_loader,
-    n,
-    t1,
-    t2,
-    C_q1,
-    C_q2,
-    g,
-    Jr,
-    Lr,
-    Mp,
-    Lp,
-    title="Trajectory after longer horizon",
-    file_path=None,
-):
-    """
-
-    Description:
-
-    Inputs:
-
-    Outpus:
-
-    """
-    x_nom, t_eval = next(iter(test_loader))
-
-    t_eval = t_eval[0, :t2]
-
-    time_steps = len(t_eval)
-    Ts = t_eval[0]
-
-    # test trajectories
-    x_hat = odeint(model, x_nom[:, 0, :4], t_eval, method="rk4").detach()
-
-    q1_hat = x_hat[:t2, n, 0].unsqueeze(
-        dim=0
-    )  # to do: make this concise with torch split or chunck
-    p1_hat = x_hat[:t2, n, 1].unsqueeze(dim=0)
-    q2_hat = x_hat[:t2, n, 2].unsqueeze(dim=0)
-    p2_hat = x_hat[:t2, n, 3].unsqueeze(dim=0)
-
-    E_hat, _ = get_energy_furuta(
-        device,
-        time_steps,
-        Ts,
-        u_func,
-        g_func,
-        q1_hat,
-        p1_hat,
-        q2_hat,
-        p2_hat,
-        C_q1,
-        C_q2,
-        g,
-        Jr,
-        Lr,
-        Mp,
-        Lp,
-    )
-    H_hat = furuta_H(q1_hat, p1_hat, q2_hat, p2_hat, g, Jr, Lr, Mp, Lp)
-    # H_hat = model.H_net(x_hat[t1:t2,0,:]).detach().squeeze()
-    E_hat = E_hat[t1:t2].cpu().detach().squeeze()
-    H_hat = H_hat[t1:t2].cpu().detach().squeeze()
-
-    # nominal trajectories
-    q1_nom = x_nom[n, :t2, 0].unsqueeze(dim=0)
-    p1_nom = x_nom[n, :t2, 1].unsqueeze(dim=0)
-    q2_nom = x_nom[n, :t2, 2].unsqueeze(dim=0)
-    p2_nom = x_nom[n, :t2, 3].unsqueeze(dim=0)
-
-    E_nom, _ = get_energy_furuta(
-        device,
-        time_steps,
-        Ts,
-        u_func,
-        g_func,
-        q1_nom,
-        p1_nom,
-        q2_nom,
-        p2_nom,
-        C_q1,
-        C_q2,
-        g,
-        Jr,
-        Lr,
-        Mp,
-        Lp,
-    )
-    H_nom = furuta_H(q1_nom, p1_nom, q2_nom, p2_nom, g, Jr, Lr, Mp, Lp)
-    E_nom = E_nom[t1:t2].cpu().detach().squeeze()
-    H_nom = H_nom[t1:t2].cpu().detach().squeeze()
-
-    x_hat = x_hat.cpu().detach()
-    x_nom = x_nom.cpu().detach()
-
-    q1_hat = x_hat[t1:t2, n, 0]  # to do: make this concise with torch split or chunck
-    p1_hat = x_hat[t1:t2, n, 1]
-    q2_hat = x_hat[t1:t2, n, 2]
-    p2_hat = x_hat[t1:t2, n, 3]
-
-    q1_nom = x_nom[n, t1:t2, 0]
-    p1_nom = x_nom[n, t1:t2, 1]
-    q2_nom = x_nom[n, t1:t2, 2]
-    p2_nom = x_nom[n, t1:t2, 3]
-    t_eval = t_eval[t1:]
-    t_eval = t_eval.cpu().detach()
-
-    fig, ax = plt.subplots(
-        2, 2, figsize=(15, 6), constrained_layout=True, sharex=True
-    )  # , sharey=True)
-
-    # t_eval = t_eval.cpu()
-    for q1, p1, q2, p2, E, H, label in [
-        [q1_nom, p1_nom, q2_nom, p2_nom, E_nom, H_nom, "nominal"],
-        [q1_hat, p1_hat, q2_hat, p2_hat, E_hat, H_hat, "prediction"],
-    ]:
-
-        # q1 = q1.cpu()
-        # p1 = p1.cpu()
-        # q2 = q2.cpu()
-        # p2 = p2.cpu()
-        # E = E.cpu()
-        # H = H.cpu()
-        if label == "prediction":
-            color = "r"
-        elif label == "nominal":
-            color = "C0"
-        ax[0, 0].plot(t_eval, q1, label=label, color=color)
-        ax[0, 1].plot(t_eval, q2, label=label, color=color)
-
-        ax[1, 0].plot(t_eval, E, label=label, color=color)
-        ax[1, 0].set_title("Energy", fontsize=10)
-        ax[1, 0].set_xlabel("time (s)")
-        ax[1, 0].set_ylabel("E")
-
-        ax[1, 1].plot(t_eval, H, label=label, color=color)
-        ax[1, 1].set_title("Hamiltonian", fontsize=10)
-        ax[1, 1].set_xlabel("time (s)")
-        ax[1, 1].set_ylabel("H")
-
-    # ax[1,0].set_ylim(0,torch.max(torch.cat((E_hat.cpu() ,E_nom.cpu())))*1.1) # because sometimes it won't appear on the plot
-
-    # for j in range(2): # show all of the legends
-    #   for i in range(2):
-    #     ax[i,j].legend()
-    ax[0, 1].legend()
-
-    # add labels and titles on every plot
-    ax[0, 0].set_title("generalized position (q1)", fontsize=10)
-    ax[0, 0].set_xlabel("time[s]")
-    ax[0, 0].set_ylabel("q1[rad]")
-
-    ax[0, 1].set_title("generalized position (q2)", fontsize=10)
-    ax[0, 1].set_xlabel("time [s]")
-    ax[0, 1].set_ylabel("q2[rad]")
-    fig.suptitle(title, fontsize=12)
-    if file_path is not None:
-        plt.savefig(file_path, format="png", dpi=400)  # ,bbox_inches='tight') # dpi
-        # plt.savefig(file_path, format="pdf", bbox_inches="tight")
-    plt.show()
-    return
-
 
 def train_test_loss_plot(
     loss_train,
@@ -618,11 +451,17 @@ def train_test_loss_plot(
 ):
     """
     Description:
-
+        plot of train and test trajectories after training
     Inputs:
-
-    Outpus:
-
+         - loss_train () :
+         - loss_test () :
+         - epochs () :
+         - file_path () :
+         - horizons () :
+         - switch_steps () :
+         - title () :
+    Outputs:
+        None
     """
     # convert switch steps from : [200,200,200,200,200] to [200,400,600...]
     horizon_steps = []
@@ -632,8 +471,7 @@ def train_test_loss_plot(
     horizon_steps = horizon_steps[1:-1]
 
     fig, ax = plt.subplots(figsize=(10, 4))
-    # ,constrained_layout=True)
-    # fig.tight_layout()
+
 
     plt.plot(epochs, loss_train, label="train")
 
@@ -653,10 +491,9 @@ def train_test_loss_plot(
                 xy=(epochs[epoch_num], loss_train[epoch_num]),
                 xycoords="data",
                 xytext=(-20, 50),
-                textcoords="offset points",  # xytext=(-70, 100), textcoords='offset points',
+                textcoords="offset points",
                 arrowprops=dict(
                     arrowstyle="->",
-                    # connectionstyle="arc,angleA=0,armA=50,rad=10"
                     connectionstyle="angle,angleA=0,angleB=90,rad=10",
                 ),
             )
@@ -665,29 +502,39 @@ def train_test_loss_plot(
             xy=(epochs[horizon_steps[-1]], loss_train[horizon_steps[-1]]),
             xycoords="data",
             xytext=(-20, 50),
-            textcoords="offset points",  # xytext=(+20, 100), textcoords='offset points',
+            textcoords="offset points", 
             arrowprops=dict(
                 arrowstyle="->",
-                # connectionstyle="arc,angleA=0,armA=50,rad=10"
+
                 connectionstyle="angle,angleA=0,angleB=90,rad=10",
             ),
         )
 
     if file_path is not None:
-        plt.savefig(file_path, format="png", dpi=400)  # ,bbox_inches='tight') # dpi
-        # plt.savefig(file_path, format="pdf", bbox_inches="tight")
+        plt.savefig(file_path, format="png", dpi=400)
     plt.show()
 
     return
 
 
 def training_plot(t_eval, train_x, nominal_x):
+    """
+    Plot of nominal vs predicted trajectories used during training
+
+    Input 
+        - t_eval (tensor) : time at which the coordinates were evaluated
+        - train_x (tensor) : predicted trajectory
+        - nominal_x (tensor) : nominal trajectory
+    Output
+        None
+    """
+
     # train_x is [batch_size,(q1,p1,q2,p1),time_steps]
     # nominal_x is [time_steps, batch_size, (q1,p1,q2,p1)]
 
     fig, ax = plt.subplots(
         2, 2, figsize=(10, 5), constrained_layout=True, sharex=True
-    )  # , sharey=True)
+    ) 
     t_eval_cpu = t_eval.detach().cpu()
 
     ax[0, 0].plot(t_eval_cpu, train_x[:, 0, 0].detach().cpu(), label="train", c="g")
@@ -725,7 +572,19 @@ def training_plot(t_eval, train_x, nominal_x):
 
 
 def plot_grads(stats, file_path, save):
-    """ """
+    """ 
+    Description:
+        Plot the gradient norm in multiple layers of a neural network depending
+        on the epoch
+    Input:
+        - stats (dict) : dict containing stats saved from an experiment where
+                        gradients where logged
+        - file_path (int) : path where to save this plot
+        - save (int) : whether or not to save this plot
+
+    Output:
+        None
+    """
     grads_preclip_min = [[] for _ in range(len(stats["layer_names"][0]))]
     grads_preclip_max = [[] for _ in range(len(stats["layer_names"][0]))]
     grads_preclip_mean = [[] for _ in range(len(stats["layer_names"][0]))]
@@ -767,7 +626,6 @@ def plot_grads(stats, file_path, save):
     for i in range(2, grads_preclip_min.shape[0]):
         ax[1].plot(grads_postclip_mean[i, :])
 
-    # fig.subplots_adjust(right=0.6)
     ax[0].set_title("before clipping")
     ax[0].set_xlabel("iteration")
     ax[0].set_ylabel("mean gradient value")

@@ -36,12 +36,16 @@ def select_horizon_list(
 ):
     """
     Description:
-
+        Select which horizon should be returned depending on the epoch number (step),
+        The horizon list indicates which horizons are going to be taken, and switch_steps
+        indications how many epochs one horizon is kept for. For example with the default
+        parameters, the model is trained for 200 epochs with horizon=50, and then 200
+        other epochs with the horizon 200.
     Inputs:
-        step,
-        epoch_number,
-        horizon_list=[50, 100, 150, 200, 250, 300],
-        switch_steps=[200, 200, 200, 150, 150, 150],
+        step (int) : current epoch 
+        epoch_number (int) : total number of epochs
+        horizon_list (list) : horizons with which the model will be trained
+        switch_steps (list) : number of epochs per horizon
     Outpus:
         horizon_updated (bool) : indicates whether or not the horizon
                                 has been updated this run
@@ -70,7 +74,22 @@ def select_horizon_list(
     return horizon_updated, horizon
 
 def multilevel_strategy_update(device, step, model, resnet_config, switch_steps):
-    """ """
+    """ 
+    Description:
+        Implements how the multilevel models are expanded (number of parameters increased) 
+        during training, and how to initialise the new model parameters.
+    Inputs:
+        device (str) : device on which the model is trained
+        step (int) : current epoch
+        model (nn.Module) : model that is being trained
+        resnet_config (int) : resnet config, one of the folowing numbers:
+                                    - 1 : Expanding HNN (and its variants)
+                                    - 2 : Interp HNN (and its variants)
+        switch_steps (list) :
+    Outputs:
+        model (nn.Module) : model that is being traing and that was just updated
+
+    """
     # resnet strategy 1 :
     if resnet_config == 1 or resnet_config == 3:
         if step < sum(switch_steps[:1]):
@@ -95,7 +114,7 @@ def multilevel_strategy_update(device, step, model, resnet_config, switch_steps)
 
     # resnet strategy 2 :
     if resnet_config == 2:
-        if step < sum(switch_steps[:1]):  # init : [0,1,2,3,4,5,6,7,8,9,10,11]
+        if step < sum(switch_steps[:1]):
             if step == 0:
                 print("Model size increased")
             model.H_net.resblock_list = [0, 16]
@@ -165,7 +184,14 @@ def multilevel_strategy_update(device, step, model, resnet_config, switch_steps)
 def generate_multi_level_list_conf2(length=17, num_lists=4):
     """
     This function generates lists of decreasing size containing which resnets should be active
-    for the multilevel strategy
+    for the multilevel strategy. Used to programatically get the lists for multilevel_strategy_update()
+
+    Example output :
+        [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
+        [0, 2, 4, 6, 8, 10, 12, 14, 16],
+        [0, 4, 8, 12, 16],
+        [0, 8, 16],
+        [0, 16]]
 
     """
     largest_list = list(range(length))

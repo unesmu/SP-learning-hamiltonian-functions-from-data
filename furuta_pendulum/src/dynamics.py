@@ -210,22 +210,29 @@ def step_fun(t, t1=0.05, scale=0.1):
 class U_FUNC:
     """
     Description:
-        Class that instantiates the input functino
+        Class that instantiates the input function
     Inputs:
         - utype (string): can be one of :
-                                    chirp
-                                    sine
-                                    tanh
-                                    multisine
-                                    step
+                                    'chirp'
+                                    'sine'
+                                    'tanh'
+                                    'multisine'
+                                    'step'
+                                    None
     Methods:
         - forward(self, t) : use time t to evalute the chosen
                             input function at time t
 
     Example use : 
-    input_function = U_FUNC(utype='chirp')
-    evaluation = input_function.forward()
-
+        # instantiate the class
+        input_function = U_FUNC(utype='chirp')
+        # change the parameters
+        input_function.params["T"] = 1.5 
+        input_function.params["f0"] = 1
+        input_function.params["f1"] = 10
+        input_function.params["scale"] = 1
+        # evaluate it at timesteps t
+        evaluation = input_function.forward(t) 
     """
 
     def __init__(self, utype=None, params={}):
@@ -264,12 +271,20 @@ class U_FUNC:
 class G_FUNC:
     """
     Description:
-
+        Class that instantiates the input matrix
     Inputs:
-        - ():
+        - gtype (string or bool): can be one of :
+                                    'simple'
+                                     None
+    Methods:
+        - forward(self, t) : use time t to evalute the chosen
+                            input matrix at time t
 
-    Outputs:
-        - ():
+    Example use : 
+        # instantiate the class
+        g_function = G_FUNC(gtype='chirp')
+        # evaluate it
+        evaluation = g_function.forward(coords) # coords contains (q1,p1,q2,p2)
     """
 
     def __init__(self, gtype=None, params={}):

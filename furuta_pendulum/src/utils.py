@@ -13,8 +13,8 @@ def collect_gradients(named_parameters):
     """
     Collect the gradients of all the named layers in a model
 
-    UCall after loss.backwards():
-    "collect_gradients(self.model.named_parameters())" to collect gradients and then use
+    Call after loss.backwards():
+    "collect_gradients(self.model.named_parameters())" to collect gradients
     """
 
     all_grads = []
