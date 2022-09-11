@@ -49,15 +49,17 @@ Both of these folders are organized in the following way :
 ## Requirements
 
 ```
-matplotlib=3.5.1
-numpy=1.21.5
-torch=1.10.2
-torchdiffeq=0.2.2
+matplotlib==3.5.3
+numpy==1.23.3
+torchdiffeq==0.2.2
+dill==0.3.5.1
+torch==1.12.1
+jupyter==1.0.0
 ```
 
 ## How to run
 
-### If you will run this on your own computer
+### Case 1: If you will run this on your own computer
 
 First create a virtual environment using either conda or venv, then activate that virtual environment.
 
@@ -67,20 +69,18 @@ You can do so by using the following command in windows terminal (assuming you h
 Then activate it by running the activate script (assuming you are on windows 10):  
 `C:\path\to\pendulumenv\Scripts\activate`
 
-
-
 Then open terminal (anaconda terminal or git bash), cd to this repository's directory, and run : `pip install -r requirements.txt`
 
-### If you will run this code using google colab
+You can now open one of the notebooks and run the code after selectiong the `pendulumenv` environment inside jupyter.
 
-First download this repository, place it in a folder in your google drive and then follow the instructions in the first cell of the notebooks in each folder.
 
-TODO: add colab clickable buttons
+### Case 2: If you will run this code using google colab
 
-### Example
+First download this repository, place it in a folder named `1_SP_Ham_func` in the main directory of your google drive. Then run the notebooks. You need to give the notebook acess to your google drive. This does not work with epfl google accounts and only with a private google account.
 
-TODO
-`black --line-length 140`
+If you have the directory setup as above you can directly click one of these buttons:
+
+ `TODO ADD CLICKABLE BUTTONS` 
 
 ## References
 
