@@ -78,9 +78,10 @@ You can now open one of the notebooks and run the code after selectiong the `pen
 
 First download this repository, place it in a folder named `1_SP_Ham_func` in the main directory of your google drive. Then run the notebooks. You need to give the notebook acess to your google drive. This does not work with epfl google accounts and only with a private google account.
 
-If you have the directory setup as above you can directly click one of these buttons:
+Once you have done that you can open and run one of the notebooks
 
- `TODO ADD CLICKABLE BUTTONS` 
+### Note
+The figures were removed from this repository but are available in this google drive [link](https://drive.google.com/drive/folders/1_jplbFlZeyT_OpV-d15vXdaF0acYklkE?usp=sharing)
 
 ## References
 

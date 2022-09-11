@@ -85,7 +85,7 @@ def count_parameters(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
 
-def save_dict(dict, dict_path):
+def save_stats(dict, dict_path):
     """
     Save dictionary file to disk (to a .txt)
     """
