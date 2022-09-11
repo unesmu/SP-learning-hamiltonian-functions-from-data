@@ -142,14 +142,19 @@ def dynamics_fn_furuta(t, coords, C_q1, C_q2, g, Jr, Lr, Mp, Lp, u_func, g_func)
 def chirp_fun(t, T=1.5, f0=1, f1=50, scale=1):
     """
     Description:
-
+        chirp function evaluated at t, using the formula from
+        https://en.wikipedia.org/wiki/Chirp
     Inputs:
-        - ():
-
+        - t (tensor): time steps at which it is evaluated
+        - scale (Float): multiplier to change the magnitude of input
+        - f1 (int) : Frequency at time T
+        - f0 (int) : Frequency at time 0
+        - T (float) : Time at which we have f1
     Outputs:
+        - (tensor) : chirp function evaluated at the timesteps t
 
     """
-    # https://en.wikipedia.org/wiki/Chirp
+    # 
     c = (f1 - f0) / T
     return torch.sin(2 * torch.pi * (c * t**2 / 2 + f0 * t)) * scale
 
@@ -157,12 +162,12 @@ def chirp_fun(t, T=1.5, f0=1, f1=50, scale=1):
 def multi_sine(t, scale=0.5):
     """
     Description:
-
+        Multi sine input function (Sum of sines)
     Inputs:
-        - ():
-
+        - t (tensor): time steps at which it is evaluated
+        - scale (Float): multiplier to change the magnitude of input
     Outputs:
-
+        - (tensor) : multisine function evaluated at the timesteps t
     """
     f = torch.tensor([2, 10, 3, 4], device=t.device).unsqueeze(dim=1)
     A = torch.tensor([2, 0.5, 0.3, 0.8], device=t.device).unsqueeze(dim=1)
@@ -172,11 +177,13 @@ def multi_sine(t, scale=0.5):
 def sine_fun(t, scale=0.5, f=1):
     """
     Description:
-
+        Sine function evaluated at t
     Inputs:
-        - ():
-
+        - t (tensor): time steps at which it is evaluated
+        - scale (Float): multiplier to change the magnitude of input
+        - f (int) : Frequency
     Outputs:
+        - (tensor) : sine function evaluated at the timesteps t
 
     """
     return scale * torch.sin(2 * torch.pi * t * f)
@@ -185,11 +192,13 @@ def sine_fun(t, scale=0.5, f=1):
 def step_fun(t, t1=0.05, scale=0.1):
     """
     Description:
-
+        step function evaluated at t
     Inputs:
-        - ():
-
+        - t (tensor): time steps at which it is evaluated
+        - scale (Float): multiplier to change the magnitude of input
+        - t1 (int) : where the step happens
     Outputs:
+        - (tensor) : step function evaluated at the timesteps t
 
     """
     f = torch.zeros_like(t)
@@ -201,11 +210,21 @@ def step_fun(t, t1=0.05, scale=0.1):
 class U_FUNC:
     """
     Description:
-
+        Class that instantiates the input functino
     Inputs:
-        - ():
+        - utype (string): can be one of :
+                                    chirp
+                                    sine
+                                    tanh
+                                    multisine
+                                    step
+    Methods:
+        - forward(self, t) : use time t to evalute the chosen
+                            input function at time t
 
-    Outputs:
+    Example use : 
+    input_function = U_FUNC(utype='chirp')
+    evaluation = input_function.forward()
 
     """
 

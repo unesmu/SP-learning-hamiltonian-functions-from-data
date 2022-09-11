@@ -42,7 +42,10 @@ def set_device():
 
 
 def set_furuta_params(which="fake"):
-
+    """
+    Set the parameters that describe the dynamics of the furuta pendulum either to 
+    real ones (that are close to the quobe servo) or fake ones
+    """
     if which == "fake":
         # The "fake" set of furuta parameters to have similar magnitudes in q1 p1 q2 p2
         Ts = 0.005
@@ -83,12 +86,17 @@ def count_parameters(model):
 
 
 def save_dict(dict, dict_path):
+    """
+    Save dictionary file to disk (to a .txt)
+    """
     with open(dict_path, "w") as file:
         file.write(json.dumps(dict))
     return
 
-
 def read_dict(dict_path):
+    """
+    Read a dictionary file  (from a .txt)
+    """
     with open(dict_path) as f:
         dict = f.read()
     dict = json.loads(dict)
@@ -96,6 +104,12 @@ def read_dict(dict_path):
 
 
 def get_maxmindenom(x, dim1, dim2, rescale_dims):
+    """
+    Given a tensor x that has 3 dimensions, calculate 
+    the minimum and maximum on one dimension, and return
+    them along with denom which would be the denominator in
+    a min max formula
+    """
     maximums = x.amax(dim=dim1).unsqueeze(dim=dim2)
     minimums = x.amin(dim=dim1).unsqueeze(dim=dim2)
     denom = (maximums - minimums).abs()

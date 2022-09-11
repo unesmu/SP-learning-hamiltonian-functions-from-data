@@ -26,11 +26,27 @@ def get_trajectory_furuta(
     Lp=0.129,
 ):
     """
-    Description:
-
+    Given the parameters, initial position, and inputs generate  trajectories
+    of a furuta pendulum 
     Inputs:
-
+        device (string) : device to use to generate the trajectories 
+                            (cpu or GPU, use get_device() )
+        init_method (string) : how to generate the random initial conditions 
+                                (see get_init_state()'s docstring)
+        num_trajectories (int) : number of trajectories
+        u_func (class) : class which containes the input function
+        g_func (class) : class which containes the input matrix
+        time_steps (int) : number of desired time steps
+                            (simulate the furta for a number time_steps of time steps)
+        y0 (tensor) : manually enter inital conditions
+        noise_std (Float) : add noise to the created trajectories
+        Ts (Float) : sampling time
+        C_q1 (Float) : friction coefficient
+        C_q2 (Float) : friction coefficient
+        g, Jr, Lr, Mp, Lp (Float) : furuta pendulum parameters
     Outputs:
+        q1, .., p2 (tensor) :  tensor containing generalized coordinates at different time steps
+        t_eval (tensor) : time steps at which the coordinates were generated
     """
 
     # sampling time
@@ -90,9 +106,16 @@ def get_init_state(n, init_method):
       Returns initial states q1,p1,q2,p2 for the Furuta pendulum
       The angular velocities ( /generalized momenmtums) are set to zero
     Inputs :
-      None
+      n (int) : number of initial states
+      init_method (string): The way to generate the random initial states, can be one of: 
+            random_nozero
+            random_closetozero
+            random_closetopi
+            random_nozero_pos
+            random_closetopi_pos
+
     Outputs :
-      y0(tensor) : inital condition
+      y0(tensor) : inital conditions
 
     """
 
@@ -137,7 +160,9 @@ def coord_derivatives_furuta_energy(
       - coords (tensor) : vector containing generalized coordinates q1,p1,q2,p2
       - C_q1 (float) : coefficient of friction related to p1 ( and q1)
       - C_q2 (float) : coefficient of friction related to p2 ( and q2)
-
+      - u_func (class) : class which containes the input function
+      - g_func (class) : class which containes the input matrix
+      - g, Jr, Lr, Mp, Lp (Float) : furuta pendulum parameters
     Outputs :
       - dq1dt, dp1dt, dq2dt, dp2dt (tensors) : Derivatives w.r.t coords
     """
@@ -178,11 +203,13 @@ def coord_derivatives_furuta_energy(
 def energy_furuta(dq1dt, dq2dt, q1, g, Jr, Lr, Mp, Lp):
     """
     Description:
-
+        Calculate the energy at every time step (dimension two of q1)
     Inputs:
-
-    Outpus:
-
+        - q1 (tensor) :  generalized coordinates q1
+        - dq1dt, dq2dt (tensor) : derivatives of generalized coordinates
+        - g, Jr, Lr, Mp, Lp (Float) : furuta pendulum parameters
+    Outputs:
+        - E (tensor) : energy evaluated at each time step
     """
     # system constants
     Jp = (1 / 12) * Mp * Lp**2
@@ -224,10 +251,21 @@ def get_energy_furuta(
 ):
     """
     Description:
-
+        Wrapper for energy_furuta() which first gets the derivative then calculates the energy
     Inputs:
-
-    Outpus:
+        - time_steps (int) : number of desired time steps
+                            (simulate the furta for a number time_steps of time steps)
+        - Ts (Float) : sampling time
+        - u_func (class) : class which containes the input function
+        - g_func (class) : class which containes the input matrix
+        - q1, .., p2 (tensor) :  tensor containing generalized coordinates at different time steps
+        - C_q1 (float) : coefficient of friction related to p1 ( and q1)
+        - C_q2 (float) : coefficient of friction related to p2 ( and q2)
+        - g, Jr, Lr, Mp, Lp (Float) : furuta pendulum parameters
+        - time_ (tensor) : (optional) time steps at which coordinates where estimated 
+    Outputs:
+        - energy (tensor) : energy evaluated at each time step
+        - derivatives (tensor) : derivatives evaluated at each time step
 
     """
     energy = []
@@ -252,10 +290,8 @@ def get_energy_furuta_newtonian(
 ):
     """
     Description:
-
-    Inputs:
-
-    Outpus:
+        Same as get_energy_furuta() but uses trajectories in the "newtonian"
+        space where instead of p1 p2 we have dq1dt and dq1dt
 
     """
 
@@ -292,10 +328,9 @@ def multiple_trajectories_furuta(
 ):
     """
     Description:
-
-    Inputs:
-
-    Outpus:
+        Wrapper function for get_trajectory_furuta() and get_energy_furuta() to get the trajectories
+        energies, and derivatives.
+        See their respective docstrings
 
     """
     # the first trajectory
