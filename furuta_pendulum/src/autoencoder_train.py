@@ -21,7 +21,24 @@ def train_only_ae(
     lr=1e-3,
     w=torch.tensor([0.1, 0.1, 1.0, 1.0]),
 ):
+    """
+    Description:
+        Train function only for the autoencoder model
 
+    Inputs:
+        - device (string) : device to use to generate the trajectories 
+                            (cpu or GPU, use get_device() )
+        - autoencoder (nn.Module) : autoencoder model 
+        - train_loader (data loader object) : train loader 
+        - test_loader (data loader object) : test loader 
+        - Ts (Float) : sampling time
+        - lr (Float) : learning rate
+        - w (bool or tensor) : either false or a tensor containing the weights
+                             to rescale each coordinate 
+
+    Outputs:
+        - stats (dict) : dict containing statistics from the training run
+    """
     optim = torch.optim.Adam(autoencoder.parameters(), lr, weight_decay=1e-4)
 
     stats = {"train_loss": [], "test_loss": []}
@@ -85,7 +102,9 @@ def ae_train_step(
     x,
     t_eval,
 ):
-
+    """
+    AE train step, see train_ae()'s docstring
+    """
     t_eval = t_eval[0, :horizon]
 
     # x_hat is the reconstructed nominal trajectory
@@ -150,6 +169,10 @@ def ae_test_step(
     x,
     t_eval,
 ):
+
+    """
+    AE test step
+    """
     with torch.no_grad():
         t_eval = t_eval[0, :horizon]
 
@@ -213,11 +236,31 @@ def train_ae(
 ):
     """
     Description:
+        Train function for the autoencoder model with the simple-HNN model
 
     Inputs:
+        - device (string) : device to use to generate the trajectories 
+                            (cpu or GPU, use get_device() )
+        - model (nn.Module) : model that has been trained 
+        - autoencoder (nn.Module) : autoencoder model 
+        - train_loader (data loader object) : train loader 
+        - test_loader (data loader object) : test loader 
+        - Ts (Float) : sampling time
+        - horizon(int or bool) : if a constant training horizon is wanted use this
+                          otherwise set to False
+        - horizon_type (string) : type of horizon can be :
+                                                    - 'auto' : is determined by a function 
+                                                               and the training epoch
+        - horizon_list (list) : horizons with which the model will be trained
+        - switch_steps (list) : number of epochs per horizon
+        - steps_ae (int) : number of steps to train the autoencoder model alone
+                           before training everything together
+        - epoch_number (int) : number of training epochs
+        - w (bool or tensor) : either false or a tensor containing the weights
+                             to rescale each coordinate 
 
-    Outpus:
-
+    Outputs:
+        - stats (dict) : dict containing statistics from the training run
     """
 
     alpha = 1.0

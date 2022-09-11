@@ -59,7 +59,7 @@ def select_horizon_list(
     Outputs:
         horizon_updated (bool) : indicates whether or not the horizon
                                 has been updated this run
-        horizon (bool) : the new horizon value
+        horizon (int) : the new horizon value
     """
     # throw error if horizon_list and switch_steps not of the same length
     assert len(horizon_list) == len(

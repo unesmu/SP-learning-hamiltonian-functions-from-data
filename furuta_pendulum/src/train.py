@@ -36,9 +36,9 @@ def train(
     """
     Description:
         Training function used for all the models on the furuta pendulum, except for
-        the autoencoder model
+        the (autoencoder+simpleHNN) model
     Inputs:
-         - device (string) : device to use to generate the trajectories 
+        - device (string) : device to use to generate the trajectories 
                             (cpu or GPU, use get_device() )
         - model (nn.Module) : model that has been trained 
         - Ts (Float) : sampling time
@@ -56,7 +56,7 @@ def train(
                                iteration where the NN approximating the Hamiltonian
                                function is frozen, and one epoch where the NN approximating
                                the input matrix is frozen
-        - horizon (int) : if a constant training horizon is wanted use this
+        - horizon (int or bool) : if a constant training horizon is wanted use this
                           otherwise set to False
         - horizon_type (string) : type of horizon can be :
                                                     - 'auto' : is determined by a function 
@@ -74,9 +74,7 @@ def train(
         - logs (dict) : dict containing statistics from the training run
     """
 
-    lr = 1e-3
-
-    optim = torch.optim.AdamW(model.parameters(), lr, weight_decay=1e-4)  # Adam
+    optim = torch.optim.AdamW(model.parameters(), lr= 1e-3, weight_decay=1e-4)  # Adam
     if lr_schedule:
         scheduler = LinearLR(
             optim, start_factor=1.0, end_factor=0.5, total_iters=epochs - begin_decay

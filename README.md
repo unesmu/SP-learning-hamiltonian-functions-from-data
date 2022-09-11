@@ -42,7 +42,8 @@ purpose.
 Both of these folders are organized in the following way :
 
 - `data`: contains folders that contains experiment runs, where the plots, models, stats, and train/test sets are saved
-- `notebook` : contains the jupyter notebooks that run script files in the `src` folder
+
+- `notebook` : contains jupyter notebooks that run script files in the `src` folder
 - `src`: contains the python script files used to run the experiments
 
 ## Requirements
@@ -60,8 +61,13 @@ torchdiffeq=0.2.2
 
 First create a virtual environment using either conda or venv, then activate that virtual environment.
 
-1. Either create a new environment using anaconda: `TODO`
-2. Or create a new environment using venv: `TODO`
+You can do so by using the following command in windows terminal (assuming you have a terminal open at the project directory):  
+`python -m venv pendulumenv` 
+
+Then activate it by running the activate script (assuming you are on windows 10):  
+`C:\path\to\pendulumenv\Scripts\activate`
+
+
 
 Then open terminal (anaconda terminal or git bash), cd to this repository's directory, and run : `pip install -r requirements.txt`
 
